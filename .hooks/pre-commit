@@ -1,0 +1,53 @@
+#!/bin/bash
+
+RED='\033[0;31m'
+BG_RED=RED='\033[0;41m'
+
+GREEN='\033[0;32m'
+BG_GREEN='\033[0;42m\033[30m'
+
+NO_COLOR='\033[0m'
+
+MSG_ERROR="${RED}$(cat $(pwd)/.git/hooks/resources/grumpy-ascii.txt)${NO_COLOR}"
+MSG_SUCCESS="${GREEN}$(cat $(pwd)/.git/hooks/resources/happy-ascii.txt)${NO_COLOR}"
+MSG=${MSG_SUCCESS}
+
+COMPOSER_PHP_VERSION=$(grep '"php":' composer.json | sed -E 's/[^0-9]*([0-9]+\.[0-9]+).*/\1/')
+
+STATUS=0
+STATUS_TEXT="Successful"
+
+run_docker() {
+    local version="$1"
+    local command="$2"
+
+    docker run --rm -t --entrypoint bash -u "$(id -u):$(id -g)" -v "$(pwd):/var/www/html" "sail-$version/app" -c "$command"
+}
+
+run_docker "${COMPOSER_PHP_VERSION}" "php ./vendor/bin/phpstan"
+d=$?
+if [ $d -ne 0 ]; then
+    MSG=$MSG_ERROR
+    STATUS=$d
+    COLOR=$BG_RED
+fi
+
+run_docker "${COMPOSER_PHP_VERSION}" "php artisan test --parallel"
+d=$?
+if [ $d -ne 0 ]; then
+    MSG=$MSG_ERROR
+    STATUS=$d
+    COLOR=$BG_RED
+fi
+
+if [ $STATUS -ne 0 ]; then
+    STATUS_TEXT="Failed with statuscode: $STATUS"
+fi
+
+echo -e "================================================"
+echo -e ""
+echo -e "${MSG}"
+echo -e ""
+echo -e "================================================"
+
+exit $STATUS

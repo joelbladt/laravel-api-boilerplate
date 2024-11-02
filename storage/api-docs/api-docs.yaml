@@ -1,0 +1,468 @@
+openapi: 3.0.0
+info:
+  title: Laravel API Boilerplate
+  version: 1.0.0
+
+paths:
+  /api/books:
+    get:
+      summary: Get a list of all books.
+      tags:
+        - Books
+      responses:
+        '200':
+          description: 'List of all books.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BooksList'
+    post:
+      summary: Creates a new Book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreBookRequest'
+      tags:
+        - Books
+      responses:
+        '201':
+          description: New Book successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookModel'
+        '422':
+          description: 'Error: Unprocessable Content'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The isbn has already been taken."
+                  errors:
+                    type: object
+                    properties:
+                      isbn:
+                        type: array
+                        minItems: 1
+                        items:
+                          type: string
+                          example: "The isbn has already been taken."
+  /api/books/{id}:
+    get:
+      summary: Get Book by id.
+      tags:
+        - Books
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Successfully found a Book by id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookModel'
+        '404':
+          description: Book not Found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 'Book can not found.'
+    put:
+      summary: Update a Book by id.
+      tags:
+        - Books
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookRequest'
+      responses:
+        '200':
+          description: Successfully updated a Book by id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookModel'
+        '404':
+          description: Book not Found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 'Book can not found.'
+    delete:
+      summary: Delete a Book by id.
+      tags:
+        - Books
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '204':
+          description: Successfully Book deleted by id
+        '404':
+          description: Book not Found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 'Book can not found.'
+
+  /api/publisher:
+    get:
+      summary: Get a list of all books.
+      tags:
+        - Publisher
+      responses:
+        '200':
+          description: 'List of all Publisher.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublisherList'
+    post:
+      summary: Creates a new Publisher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorePublisherRequest'
+      tags:
+        - Publisher
+      responses:
+        '201':
+          description: New Publisher successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublisherModel'
+        '422':
+          description: 'Error: Unprocessable Content'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The isbn has already been taken."
+                  errors:
+                    type: object
+                    properties:
+                      isbn:
+                        type: array
+                        minItems: 1
+                        items:
+                          type: string
+                          example: "The isbn has already been taken."
+  /api/publisher/{id}:
+    get:
+      summary: Get Publisher by id.
+      tags:
+        - Publisher
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Successfully found a Publisher by id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublisherModel'
+        '404':
+          description: Publisher not Found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 'Publisher can not found.'
+    put:
+      summary: Update a Publisher by id.
+      tags:
+        - Publisher
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePublisherRequest'
+      responses:
+        '200':
+          description: Successfully updated a Publisher by id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublisherModel'
+        '404':
+          description: Publisher not Found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 'Publisher can not found.'
+    delete:
+      summary: Delete a Publisher by id.
+      tags:
+        - Publisher
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '204':
+          description: Successfully Publisher deleted by id
+        '404':
+          description: Publisher not Found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 'Publisher can not found.'
+
+components:
+  responses:
+
+# "next_page_url": "http://localhost/api/employees?page=2",
+
+# "path": "http://localhost/api/employees",
+# "per_page": 20,
+# "prev_page_url": null,
+# "to": 20,
+# "total": 267
+
+  schemas:
+    BooksList:
+      type: object
+      properties:
+        data:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/BookModel'
+
+    BookModel:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'Harry Potter and the Order of the Phoenix'
+        author:
+          type: string
+          example: 'Joanne K. Rowling'
+        isbn:
+          type: string
+          example: '9780747551003'
+        publisher:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublisherModel'
+        publication_year:
+          type: string
+          example: '2003'
+        genres:
+          type: string
+          example:
+        summary:
+          type: string
+          example: "Dumbledore lowered his hands and surveyed Harry through his half-moon glasses. 'It is time,' he said, 'for me to tell you what I should have told you five years ago, Harry. Please sit down. I am going to tell you everything.' Harry Potter is due to start his fifth year at Hogwarts School of Witchcraft and Wizadry. He is desperate to get back to school and find out why hiss friends Ron and Hermione have been so secretive all summer. However, what Harry is about to discover in his new year at Hogwarts will turn his whole world upside down... But before he even gets to school, Harry has an unexpected and frightening encounter with two Dementors, has to face a court hearing at the Ministry of Magic and has been escorted on a night-time broomstick ride to the secret headquarters of a mysterious group called 'The Order of the Phoenix'. And that is just the start. A gripping and electrifying novel, full of suspense, secrets, and - of course - magic."
+
+    StoreBookRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'Harry Potter and the Order of the Phoenix'
+        author:
+          type: string
+          example: 'Joanne K. Rowling'
+        isbn:
+          type: string
+          example: '9780747551003'
+        publication_year:
+          type: string
+          example: '2003'
+        genres:
+          type: string
+          example:
+        summary:
+          type: string
+          example: "Dumbledore lowered his hands and surveyed Harry through his half-moon glasses. 'It is time,' he said, 'for me to tell you what I should have told you five years ago, Harry. Please sit down. I am going to tell you everything.' Harry Potter is due to start his fifth year at Hogwarts School of Witchcraft and Wizadry. He is desperate to get back to school and find out why hiss friends Ron and Hermione have been so secretive all summer. However, what Harry is about to discover in his new year at Hogwarts will turn his whole world upside down... But before he even gets to school, Harry has an unexpected and frightening encounter with two Dementors, has to face a court hearing at the Ministry of Magic and has been escorted on a night-time broomstick ride to the secret headquarters of a mysterious group called 'The Order of the Phoenix'. And that is just the start. A gripping and electrifying novel, full of suspense, secrets, and - of course - magic."
+
+    UpdateBookRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: 'Harry Potter and the Order of the Phoenix'
+        publisher_id:
+          type: integer
+          example: 1
+        genres:
+          type: string
+          example: 'Fantasy, Young Adult (YA), Adventure, Wizarding'
+
+    PublisherList:
+      type: object
+      properties:
+        data:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PublisherModel'
+
+    PublisherModel:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Bloomsbury Publishing Plc'
+        email:
+          type: string
+          example: 'contact@bloomsbury.com'
+        website:
+          type: string
+          example: 'https://www.bloomsbury.com'
+        address:
+          type: string
+          example: '50 Bedford Square'
+        zipcode:
+          type: string
+          example: 'WC1B 3DP'
+        city:
+          type: string
+          example: 'London'
+        country:
+          type: string
+          example: 'United Kingdom'
+        phone:
+          type: string
+          example: '+44 (0)20 7631 5600'
+
+    StorePublisherRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Bloomsbury Publishing Plc'
+        email:
+          type: string
+          example: 'contact@bloomsbury.com'
+        website:
+          type: string
+          example: 'https://www.bloomsbury.com'
+        address:
+          type: string
+          example: '50 Bedford Square'
+        zipcode:
+          type: string
+          example: 'WC1B 3DP'
+        city:
+          type: string
+          example: 'London'
+        country:
+          type: string
+          example: 'United Kingdom'
+        phone:
+          type: string
+          example: '+44 (0)20 7631 5600'
+
+    UpdatePublisherRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Elderwood & Enchantments Press'
+        email:
+          type: string
+          example: 'albus.spellcaster@hogwartsmail.com'
+        website:
+          type: string
+          example: 'https://example.com'
+        phone:
+          type: string
+          example: '+44 20 7946 0958'
+
+  parameters:
+    itemsPerPageParam:
+     in: query
+     name: itemsPerPage
+     description: Items per page for pagination
+     schema:
+       type: integer
+       default: 25
+    currentPageParam:
+      in: query
+      name: currentPage
+      description: Current page number for the pagination
+      schema:
+        type: integer
+        default: 1
