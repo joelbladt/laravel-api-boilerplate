@@ -20,8 +20,8 @@ This project is a boilerplate setup for building an API with Laravel. It include
 
 **1. Clone the repository:**
 ```bash
-git clone <repository URL>
-cd <project directory>
+git clone https://github.com/joelbladt/laravel-api-boilerplate.git
+cd ./laravel-api-boilerplate
 ```
 
 **2. Install dependencies:**
