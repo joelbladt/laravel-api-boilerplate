@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\BookNotFoundException;
+use App\Exceptions\PublisherNotFoundException;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Http\Resources\BookResource;
@@ -23,32 +25,33 @@ class BookController extends Controller
      */
     public function index()
     {
-        $books = $this->bookService->all();
-        return BookResource::collection($books);
+        $books = $this->bookService->getAllBooks();
+        return new BookResourceCollection($books);
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param StoreBookRequest $request
-     * @return BookResource
+     * @return JsonResponse
      */
-    public function store(StoreBookRequest $request): BookResource
+    public function store(StoreBookRequest $request): JsonResponse
     {
-        $book = $this->bookService->create($request->validated());
-        return new BookResource($book);
+        $book = $this->bookService->createBook($request->validated());
+        return response()->json(new BookResource($book), 201);
     }
 
     /**
      * Display the specified resource.
      *
      * @param int $id
-     * @return BookResource
+     * @return JsonResponse
+     * @throws BookNotFoundException
      */
-    public function show(int $id): BookResource
+    public function show(int $id): JsonResponse
     {
-        $book = $this->bookService->show($id);
-        return new BookResource($book);
+        $book = $this->bookService->findBookById($id);
+        return response()->json(new BookResource($book));
     }
 
     /**
@@ -56,12 +59,13 @@ class BookController extends Controller
      *
      * @param UpdateBookRequest $request
      * @param int $id
-     * @return BookResource
+     * @return JsonResponse
+     * @throws PublisherNotFoundException
      */
-    public function update(UpdateBookRequest $request, int $id): BookResource
+    public function update(UpdateBookRequest $request, int $id): JsonResponse
     {
-        $book = $this->bookService->update($id, $request->validated());
-        return new BookResource($book);
+        $book = $this->bookService->updateBook($id, $request->validated());
+        return response()->json(new BookResource($book), JsonResponse::HTTP_OK);
     }
 
     /**
@@ -72,6 +76,7 @@ class BookController extends Controller
      */
     public function destroy(int $id): bool|JsonResponse
     {
-        return $this->bookService->delete($id);
+        $this->bookService->deleteBook($id);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

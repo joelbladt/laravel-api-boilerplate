@@ -4,37 +4,36 @@ namespace App\Interfaces;
 
 use App\Models\Book;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\JsonResponse;
 
 interface BookRepositoryInterface
 {
     /**
      * @return Collection<int, Book>
      */
-    public function all(): Collection;
+    public function getAllBooks(): Collection;
+
+    /**
+     * @param int $id
+     * @return Book
+     */
+    public function findBookById(int $id): ?Book;
 
     /**
      * @param array<string, mixed> $data
      * @return Book
      */
-    public function create(array $data): Book;
+    public function createBook(array $data): Book;
 
     /**
      * @param int $id
-     * @return Book
-     */
-    public function show(int $id): Book;
-
-    /**
      * @param array<string, mixed> $data
-     * @param int $id
      * @return Book
      */
-    public function update(array $data, int $id): Book;
+    public function updateBook(int $id, array $data): Book;
 
     /**
      * @param int $id
-     * @return JsonResponse
+     * @return bool|null
      */
-    public function delete(int $id): JsonResponse;
+    public function deleteBookById(int $id): ?bool;
 }

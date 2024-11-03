@@ -19,7 +19,10 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(BookRepositoryInterface::class, BookRepository::class);
         $this->app->bind(BookService::class, function ($app) {
-            return new BookService($app->make(BookRepositoryInterface::class));
+            return new BookService(
+                $app->make(BookRepositoryInterface::class),
+                $app->make(PublisherRepositoryInterface::class),
+            );
         });
 
         $this->app->bind(PublisherRepositoryInterface::class, PublisherRepository::class);

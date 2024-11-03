@@ -7,79 +7,66 @@ use App\Exceptions\BookNotFoundException;
 use App\Interfaces\BookRepositoryInterface;
 use App\Models\Book;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\JsonResponse;
 
 class BookRepository implements BookRepositoryInterface
 {
     /**
      * @return Collection<int, Book>
      */
-    public function all(): Collection
+    public function getAllBooks(): Collection
     {
         $books = Book::with('publisher')->get()->all();
         return Collection::make($books);
     }
 
     /**
+     * @param int $id
+     * @return Book|null
+     */
+    public function findBookById(int $id): ?Book
+    {
+        return Book::find($id) ?? null;
+    }
+
+    /**
      * @param array<string, string> $data
      * @return Book
      */
-    public function create(array $data): Book
+    public function createBook(array $data): Book
     {
         return Book::create($data);
     }
 
     /**
+     * @param int $id
      * @param array<string, string> $data
-     * @param int $id
      * @return Book
      */
-    public function update(array $data, int $id): Book
+    public function updateBook(int $id, array $data): Book
     {
-        $book = Book::find($id);
+        $book = $this->findBookById($id);
 
         if (!$book) {
             throw new BookNotFoundException();
         }
 
-        if ($book->update($data) && !empty($data['publisher_id'])) {
-            $book->load('publisher');
-        }
+        $book->update($data);
 
         return $book;
     }
 
     /**
      * @param int $id
-     * @return Book
-     * @throws BookNotFoundException
+     * @return bool|null
      */
-    public function show(int $id): Book
+    public function deleteBookById(int $id): ?bool
     {
-        $book = Book::find($id);
+        $book = $this->findBookById($id);
 
         if (!$book) {
-            throw new BookNotFoundException();
+            return false;
         }
 
-        $book->load('publisher');
-
-        return $book;
-    }
-
-    /**
-     * @param int $id
-     * @return JsonResponse
-     * @throws BookNotDeletedException
-     */
-    public function delete(int $id): JsonResponse
-    {
-        $book = Book::find($id);
-
-        if (!$book || !$book->delete()) {
-            throw new BookNotDeletedException();
-        }
-
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return $book->delete();
     }
 }

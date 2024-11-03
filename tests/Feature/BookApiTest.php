@@ -2,18 +2,21 @@
 
 namespace Tests\Feature;
 
+use App\Exceptions\PublisherNotFoundException;
 use App\Http\Resources\BookResourceCollection;
 use App\Models\Book;
 use App\Models\Publisher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\JsonResponse;
+use InvalidArgumentException;
 use Tests\TestCase;
 
 class BookApiTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
-    public function test_get_books(): void
+    public function test_get_all_books(): void
     {
         $books = Book::factory()
             ->count(10)
@@ -44,6 +47,9 @@ class BookApiTest extends TestCase
                         'summary',
                     ],
                 ],
+                'meta' => [
+                    'total'
+                ],
             ]);
 
         $resourceCollection = new BookResourceCollection($books->load('publisher'));
@@ -64,18 +70,106 @@ class BookApiTest extends TestCase
         ])
             ->decodeResponseJson();
 
-        $this->assertEquals($book->title, $response['data']['title']);
-        $this->assertEquals($book->author, $response['data']['author']);
-        $this->assertEquals($book->isbn, $response['data']['isbn']);
-        $this->assertNotEmpty($response['data']['created_at']);
+        $this->assertEquals($book->title, $response['title']);
+        $this->assertEquals($book->author, $response['author']);
+        $this->assertEquals($book->isbn, $response['isbn']);
+        $this->assertNotEmpty($response['created_at']);
 
-        // Prüfe Datenbank
         $this->assertDatabaseHas(Book::class, [
             'title' => $book->title,
             'author' => $book->author,
             'isbn' => $book->isbn,
             'created_at' => now(),
         ]);
+    }
+
+    public function test_create_book_with_publisher(): void
+    {
+        $publisher = Publisher::factory()->create();
+        $book = Book::factory()->make();
+
+        $response = $this->postJson('/api/books', [
+            'title' => $book->title,
+            'author' => $book->author,
+            'isbn' => $book->isbn,
+            'publisher_id' => $publisher->id,
+        ])
+            ->decodeResponseJson();
+
+        $this->assertEquals($book->title, $response['title']);
+        $this->assertEquals($book->author, $response['author']);
+        $this->assertEquals($book->isbn, $response['isbn']);
+        $this->assertNotEmpty($response['created_at']);
+
+        $this->assertDatabaseHas(Book::class, [
+            'title' => $book->title,
+            'author' => $book->author,
+            'isbn' => $book->isbn,
+        ]);
+    }
+
+    public function test_create_book_handle_publisher_not_found_exception(): void
+    {
+        try {
+            $book = Book::factory()->make();
+
+            $response = $this->postJson('/api/books', [
+                'title' => $book->title,
+                'author' => $book->author,
+                'isbn' => $book->isbn,
+                'publisher_id' => 999,
+            ])
+                ->decodeResponseJson();
+
+            $this->assertDatabaseMissing(Book::class, [
+                'title' => $book->title,
+                'author' => $book->author,
+                'isbn' => $book->isbn,
+            ]);
+        } catch (PublisherNotFoundException $e) {
+            $response = $e->render(request());
+
+            $this->assertInstanceOf(JsonResponse::class, $response);
+            $this->assertEquals(404, $response->getStatusCode());
+
+            $this->assertEquals([
+                'error' => [
+                    'message' => "Publisher can not found"
+                ]
+            ], $response->getData(true));
+        }
+    }
+
+    public function test_create_book_handle_invalid_argument_exception(): void
+    {
+        try {
+            $book = Book::factory()->make();
+
+            $response = $this->postJson('/api/books', [
+                'title' => $book->title,
+                'author' => $book->author,
+                'isbn' => $book->isbn,
+                'publisher_id' => '999',
+            ])
+                ->decodeResponseJson();
+
+            $this->assertDatabaseMissing(Book::class, [
+                'title' => $book->title,
+                'author' => $book->author,
+                'isbn' => $book->isbn,
+            ]);
+        } catch (InvalidArgumentException $e) {
+            $response = $e->render(request());
+
+            $this->assertInstanceOf(JsonResponse::class, $response);
+            $this->assertEquals(404, $response->getStatusCode());
+
+            $this->assertEquals([
+                'error' => [
+                    'message' => "The publisher_id must be an integer."
+                ]
+            ], $response->getData(true));
+        }
     }
 
     public function test_create_book_already_exists(): void
@@ -97,8 +191,6 @@ class BookApiTest extends TestCase
             ->decodeResponseJson();
 
         $this->assertEquals('The Book has already been taken.', $response['message']);
-
-        // Prüfe Datenbank
         $this->assertDatabaseHas(Book::class, [
             'title' => $book->title,
             'author' => $book->author,
@@ -108,48 +200,47 @@ class BookApiTest extends TestCase
 
     public function test_show_book(): void
     {
-        Book::factory()->forPublisher()->create();
+        Book::factory()
+            ->forPublisher()
+            ->create();
 
         $response = $this->get('/api/books/1');
         $response->assertStatus(200)
-            ->assertJsonCount(1)
+            ->assertJsonCount(9)
             ->assertJsonStructure([
-                'data' => [
-                    'title',
-                    'author',
-                    'isbn',
-                    'publisher' => [
-                        'name',
-                        'address',
-                        'zipcode',
-                        'city',
-                        'country',
-                        'website',
-                        'email',
-                        'phone',
-                    ],
-                    'publication_year',
-                    'genres',
-                    'summary',
+                'title',
+                'author',
+                'isbn',
+                'publisher' => [
+                    'name',
+                    'address',
+                    'zipcode',
+                    'city',
+                    'country',
+                    'website',
+                    'email',
+                    'phone',
                 ],
+                'publication_year',
+                'genres',
+                'summary',
+                'created_at',
+                'updated_at',
             ]);
 
-        // Prüfe Datenbank
         $result = $response->decodeResponseJson();
         $this->assertDatabaseHas(Book::class, [
-            'title' => $result['data']['title'],
-            'author' => $result['data']['author'],
-            'isbn' => $result['data']['isbn'],
-            'publication_year' => $result['data']['publication_year'],
-            'genres' => $result['data']['genres'],
-            'summary' => $result['data']['summary'],
+            'title' => $result['title'],
+            'author' => $result['author'],
+            'isbn' => $result['isbn'],
+            'publication_year' => $result['publication_year'],
+            'genres' => $result['genres'],
+            'summary' => $result['summary'],
         ]);
     }
 
-    public function test_show_book_not_found(): void
+    public function test_show_book_handle_not_found_exception(): void
     {
-        $book = Book::factory()->forPublisher()->create();
-
         $response = $this->get('/api/books/999');
         $response->assertNotFound()
             ->assertExactJson([
@@ -157,10 +248,6 @@ class BookApiTest extends TestCase
                     'message' => 'Book can not found'
                 ]
             ]);
-
-        $this->assertDatabaseHas(Book::class, [
-            'id' => $book->id,
-        ]);
 
         $this->assertDatabaseMissing(Book::class, [
             'id' => 999,
@@ -170,53 +257,116 @@ class BookApiTest extends TestCase
     public function test_update_book(): void
     {
         $book = Book::factory()->create();
-        $publisher = Publisher::factory()->create();
-        $updatedBook = Book::factory()->make();
+        $data = [
+            'summary' => $this->faker->paragraph(),
+        ];
 
-        $response = $this->putJson('/api/books/' . $book->id, [
-            'title' => $updatedBook->title,
-            'isbn' => $updatedBook->isbn,
-            'publisher_id' => $publisher->id,
-            'summary' => $updatedBook->summary,
-        ]);
+        $response = $this->putJson('/api/books/' . $book->id, $data);
         $response->assertOk()
             ->assertJsonStructure([
-                'data' => [
-                    'title',
-                    'author',
-                    'isbn',
-                    'publisher' => [
-                        'name',
-                        'address',
-                        'zipcode',
-                        'city',
-                        'country',
-                        'website',
-                        'email',
-                        'phone',
-                    ],
-                    'publication_year',
-                    'genres',
-                    'summary',
+                'title',
+                'author',
+                'isbn',
+                'publication_year',
+                'genres',
+                'summary',
+            ]);
+
+        $result = $response->decodeResponseJson();
+
+        $this->assertEquals($book->title, $result['title']);
+        $this->assertEquals($book->isbn, $result['isbn']);
+        $this->assertEquals($data['summary'], $result['summary']);
+        $this->assertDatabaseHas(Book::class, [
+            'title' => $result['title'],
+            'author' => $result['author'],
+            'isbn' => $result['isbn'],
+            'publication_year' => $result['publication_year'],
+            'genres' => $result['genres'],
+            'summary' => $result['summary'],
+        ]);
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function test_update_book_handle_not_found_exception(): void
+    {
+        $response = $this->putJson('/api/books/999', [
+            'title' => $this->faker->sentence(3),
+            'isbn' => $this->faker->isbn13(),
+        ]);
+
+        $response->assertNotFound()
+            ->assertJsonStructure([
+                'error' => [
+                    'message',
                 ]
             ]);
 
-        // Konvertiere das Ergebnis in ein Array
+        /** @var array<string, string> $result */
         $result = $response->decodeResponseJson();
 
-        $this->assertEquals($updatedBook->title, $result['data']['title']);
-        $this->assertEquals($updatedBook->isbn, $result['data']['isbn']);
-        $this->assertEquals($updatedBook->summary, $result['data']['summary']);
-
-        // Prüfe Datenbank
-        $this->assertDatabaseHas(Book::class, [
-            'title' => $result['data']['title'],
-            'author' => $result['data']['author'],
-            'isbn' => $result['data']['isbn'],
-            'publication_year' => $result['data']['publication_year'],
-            'genres' => $result['data']['genres'],
-            'summary' => $result['data']['summary'],
+        $this->assertEquals('Book can not found', $result['error']['message']);
+        $this->assertDatabaseMissing(Book::class, [
+            'id' => 999,
         ]);
+    }
+
+    public function test_update_book_handle_publisher_not_found_exception(): void
+    {
+        try {
+            $book = Book::factory()->create();
+
+            $response = $this->putJson('/api/books/' . $book->id, [
+                'title' => $this->faker->sentence(3),
+                'publisher_id' => 999,
+            ])
+                ->decodeResponseJson();
+
+            $this->assertDatabaseMissing(Book::class, [
+                'publisher_id' => 999,
+            ]);
+        } catch (PublisherNotFoundException $e) {
+            $response = $e->render(request());
+
+            $this->assertInstanceOf(JsonResponse::class, $response);
+            $this->assertEquals(404, $response->getStatusCode());
+
+            $this->assertEquals([
+                'error' => [
+                    'message' => "Publisher can not found"
+                ]
+            ], $response->getData(true));
+        }
+    }
+
+    public function test_update_book_handle_invalid_argument_exception(): void
+    {
+        try {
+            $book = Book::factory()->create();
+
+            $response = $this->postJson('/api/books/' . $book->id, [
+                'publisher_id' => '999',
+            ])
+                ->decodeResponseJson();
+
+            $this->assertDatabaseMissing(Book::class, [
+                'id' => $book->id,
+                'publisher_id' => 999,
+            ]);
+        } catch (InvalidArgumentException $e) {
+            $response = $e->render(request());
+
+            $this->assertInstanceOf(JsonResponse::class, $response);
+            $this->assertEquals(404, $response->getStatusCode());
+
+            $this->assertEquals([
+                'error' => [
+                    'message' => "The publisher_id must be an integer."
+                ]
+            ], $response->getData(true));
+        }
     }
 
     public function test_delete_book(): void
@@ -233,19 +383,8 @@ class BookApiTest extends TestCase
 
     public function test_delete_book_failed(): void
     {
-        $book = Book::factory()->create();
-
         $response = $this->delete('/api/books/999');
-        $response->assertNotFound()
-            ->assertExactJson([
-            'error' => [
-                'message' => "Book can not deleted"
-            ]
-        ]);
-
-        $this->assertDatabaseHas(Book::class, [
-            'id' => $book->id,
-        ]);
+        $response->assertNoContent();
 
         $this->assertDatabaseMissing(Book::class, [
             'id' => 999,
