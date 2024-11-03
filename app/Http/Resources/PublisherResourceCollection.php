@@ -15,10 +15,15 @@ class PublisherResourceCollection extends ResourceCollection
      */
     public function toArray(Request $request): array
     {
-        return $this->collection->map(
-            function ($item) use ($request) {
-                return $item instanceof PublisherResource ? $item->toArray($request) : [];
-            }
-        )->all();
+        return [
+            'data' => $this->collection->map(
+                function ($item) use ($request) {
+                    return $item instanceof PublisherResource ? $item->toArray($request) : [];
+                }
+            )->all(),
+            'meta' => [
+                'total' => $this->collection->count(),
+            ]
+        ];
     }
 }

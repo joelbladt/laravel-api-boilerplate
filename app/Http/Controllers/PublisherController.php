@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\PublisherNotFoundException;
 use App\Http\Requests\StorePublisherRequest;
 use App\Http\Requests\UpdatePublisherRequest;
 use App\Http\Resources\PublisherResource;
 use App\Http\Resources\PublisherResourceCollection;
-use App\Models\Publisher;
 use App\Services\PublisherService;
 use Illuminate\Http\JsonResponse;
 
 class PublisherController extends Controller
 {
     public function __construct(
-        protected publisherService $publisherService
+        protected PublisherService $publisherService
     )
     {
     }
@@ -25,32 +25,33 @@ class PublisherController extends Controller
      */
     public function index()
     {
-        $publisher = $this->publisherService->all();
-        return PublisherResource::collection($publisher);
+        $publisher = $this->publisherService->getAllPublisher();
+        return new PublisherResourceCollection($publisher);
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param StorePublisherRequest $request
-     * @return PublisherResource
+     * @return JsonResponse
      */
-    public function store(StorePublisherRequest $request): PublisherResource
+    public function store(StorePublisherRequest $request): JsonResponse
     {
-        $publisher = $this->publisherService->create($request->validated());
-        return new PublisherResource($publisher);
+        $publisher = $this->publisherService->createPublisher($request->validated());
+        return response()->json(new PublisherResource($publisher), 201);
     }
 
     /**
      * Display the specified resource.
      *
      * @param int $id
-     * @return PublisherResource
+     * @return JsonResponse
+     * @throws PublisherNotFoundException
      */
-    public function show(int $id): PublisherResource
+    public function show(int $id): JsonResponse
     {
-        $user = $this->publisherService->show($id);
-        return new PublisherResource($user);
+        $publisher = $this->publisherService->findPublisherById($id);
+        return response()->json(new PublisherResource($publisher));
     }
 
     /**
@@ -58,12 +59,13 @@ class PublisherController extends Controller
      *
      * @param UpdatePublisherRequest $request
      * @param int $id
-     * @return PublisherResource
+     * @return JsonResponse
+     * @throws PublisherNotFoundException
      */
-    public function update(UpdatePublisherRequest $request, int $id): PublisherResource
+    public function update(UpdatePublisherRequest $request, int $id): JsonResponse
     {
-        $publisher = $this->publisherService->update($id, $request->validated());
-        return new PublisherResource($publisher);
+        $publisher = $this->publisherService->updatePublisher($id, $request->validated());
+        return response()->json(new PublisherResource($publisher), JsonResponse::HTTP_OK);
     }
 
     /**
@@ -74,6 +76,7 @@ class PublisherController extends Controller
      */
     public function destroy(int $id): bool|JsonResponse
     {
-        return $this->publisherService->delete($id);
+        $this->publisherService->deletePublisher($id);
+        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
     }
 }

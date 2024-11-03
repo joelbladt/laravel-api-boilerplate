@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Exceptions\PublisherNotFoundException;
 use App\Interfaces\PublisherRepositoryInterface;
 use App\Models\Publisher;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\JsonResponse;
 
 class PublisherService
 {
@@ -18,18 +18,34 @@ class PublisherService
     /**
      * @return Collection<int, Publisher>
      */
-    public function all(): Collection
+    public function getAllPublisher(): Collection
     {
-        return $this->publisherRepository->all();
+        return $this->publisherRepository->getAllPublisher();
+    }
+
+    /**
+     * @param int $id
+     * @return Publisher|null
+     * @throws PublisherNotFoundException
+     */
+    public function findPublisherById(int $id): ?Publisher
+    {
+        $publisher = $this->publisherRepository->findPublisherById($id);
+
+        if (!$publisher) {
+            throw new PublisherNotFoundException();
+        }
+
+        return $publisher;
     }
 
     /**
      * @param array<string, mixed> $data
      * @return Publisher
      */
-    public function create(array $data): Publisher
+    public function createPublisher(array $data): Publisher
     {
-        return $this->publisherRepository->create($data);
+        return $this->publisherRepository->createPublisher($data);
     }
 
     /**
@@ -37,26 +53,17 @@ class PublisherService
      * @param array<string, mixed> $data
      * @return Publisher
      */
-    public function update(int $id, array $data): Publisher
+    public function updatePublisher(int $id, array $data): Publisher
     {
-        return $this->publisherRepository->update($data, $id);
+        return $this->publisherRepository->updatePublisher($id, $data);
     }
 
     /**
      * @param int $id
-     * @return Publisher
+     * @return bool|null
      */
-    public function show(int $id): Publisher
+    public function deletePublisher(int $id): ?bool
     {
-        return $this->publisherRepository->show($id);
-    }
-
-    /**
-     * @param int $id
-     * @return JsonResponse
-     */
-    public function delete(int $id): JsonResponse
-    {
-        return $this->publisherRepository->delete($id);
+        return $this->publisherRepository->deletePublisherById($id);
     }
 }

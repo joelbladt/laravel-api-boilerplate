@@ -34,8 +34,8 @@ class StorePublisherRequest extends FormRequest
                             && $query->where('website', $this->website);
                     }),
             ],
-            'email' => 'string|email',
-            'website' => 'string|url',
+            'email' => 'required|string|email',
+            'website' => 'required|string|url',
             'address' => 'string|nullable',
             'zipcode' => 'string|nullable',
             'city' => 'string|nullable',

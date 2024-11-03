@@ -4,37 +4,36 @@ namespace App\Interfaces;
 
 use App\Models\Publisher;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\JsonResponse;
 
 interface PublisherRepositoryInterface
 {
     /**
      * @return Collection<int, Publisher>
      */
-    public function all(): Collection;
+    public function getAllPublisher(): Collection;
+
+    /**
+     * @param int $id
+     * @return Publisher|null
+     */
+    public function findPublisherById(int $id): ?Publisher;
 
     /**
      * @param array<string, mixed> $data
      * @return Publisher
      */
-    public function create(array $data): Publisher;
+    public function createPublisher(array $data): Publisher;
 
     /**
      * @param int $id
-     * @return Publisher
-     */
-    public function show(int $id): Publisher;
-
-    /**
      * @param array<string, mixed> $data
-     * @param int $id
      * @return Publisher
      */
-    public function update(array $data, int $id): Publisher;
+    public function updatePublisher(int $id, array $data): Publisher;
 
     /**
      * @param int $id
-     * @return JsonResponse
+     * @return bool|null
      */
-    public function delete(int $id): JsonResponse;
+    public function deletePublisherById(int $id): ?bool;
 }

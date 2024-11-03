@@ -7,74 +7,66 @@ use App\Exceptions\PublisherNotFoundException;
 use App\Interfaces\PublisherRepositoryInterface;
 use App\Models\Publisher;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\JsonResponse;
 
 class PublisherRepository implements PublisherRepositoryInterface
 {
     /**
      * @return Collection<int, Publisher>
      */
-    public function all(): Collection
+    public function getAllPublisher(): Collection
     {
         $publisher = Publisher::with('books')->get()->all();
         return Collection::make($publisher);
     }
 
     /**
+     * @param int $id
+     * @return Publisher|null
+     */
+    public function findPublisherById(int $id): ?Publisher
+    {
+        return Publisher::find($id) ?? null;
+    }
+
+    /**
      * @param array<string, string> $data
      * @return Publisher
      */
-    public function create(array $data): Publisher
+    public function createPublisher(array $data): Publisher
     {
         return Publisher::create($data);
     }
 
     /**
-     * @param array<string, string> $data
      * @param int $id
+     * @param array<string, string> $data
      * @return Publisher
      */
-    public function update(array $data, int $id): Publisher
+    public function updatePublisher(int $id, array $data): Publisher
     {
-        $publisher = Publisher::find($id);
+        $publisher = $this->findPublisherById($id);
 
         if (!$publisher) {
             throw new PublisherNotFoundException();
         }
 
         $publisher->update($data);
+
         return $publisher;
     }
 
     /**
      * @param int $id
-     * @return Publisher
-     * @throws PublisherNotFoundException
+     * @return bool|null
      */
-    public function show(int $id): Publisher
+    public function deletePublisherById(int $id): ?bool
     {
-        $publisher = Publisher::find($id);
+        $publisher = $this->findPublisherById($id);
 
         if (!$publisher) {
-            throw new PublisherNotFoundException();
+            return false;
         }
 
-        return $publisher;
-    }
-
-    /**
-     * @param int $id
-     * @return JsonResponse
-     * @throws PublisherNotDeletedException
-     */
-    public function delete(int $id): JsonResponse
-    {
-        $book = Publisher::find($id);
-
-        if (!$book || !$book->delete()) {
-            throw new PublisherNotDeletedException();
-        }
-
-        return response()->json(null, JsonResponse::HTTP_NO_CONTENT);
+        return $publisher->delete();
     }
 }

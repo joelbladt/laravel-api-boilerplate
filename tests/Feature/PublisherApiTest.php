@@ -34,6 +34,9 @@ class PublisherApiTest extends TestCase
                         'phone',
                     ],
                 ],
+                'meta' => [
+                    'total'
+                ],
             ]);
 
         $resourceCollection = new PublisherResourceCollection($publisher);
@@ -59,17 +62,16 @@ class PublisherApiTest extends TestCase
         ])
             ->decodeResponseJson();
 
-        $this->assertEquals($publisher->name, $response['data']['name']);
-        $this->assertEquals($publisher->email, $response['data']['email']);
-        $this->assertEquals($publisher->website, $response['data']['website']);
-        $this->assertEquals($publisher->address, $response['data']['address']);
-        $this->assertEquals($publisher->zipcode, $response['data']['zipcode']);
-        $this->assertEquals($publisher->city, $response['data']['city']);
-        $this->assertEquals($publisher->country, $response['data']['country']);
-        $this->assertEquals($publisher->phone, $response['data']['phone']);
-        $this->assertNotEmpty($response['data']['created_at']);
+        $this->assertEquals($publisher->name, $response['name']);
+        $this->assertEquals($publisher->email, $response['email']);
+        $this->assertEquals($publisher->website, $response['website']);
+        $this->assertEquals($publisher->address, $response['address']);
+        $this->assertEquals($publisher->zipcode, $response['zipcode']);
+        $this->assertEquals($publisher->city, $response['city']);
+        $this->assertEquals($publisher->country, $response['country']);
+        $this->assertEquals($publisher->phone, $response['phone']);
+        $this->assertNotEmpty($response['created_at']);
 
-        // Prüfe Datenbank
         $this->assertDatabaseHas(Publisher::class, [
             'name' => $publisher->name,
             'email' => $publisher->email,
@@ -102,8 +104,6 @@ class PublisherApiTest extends TestCase
             ->decodeResponseJson();
 
         $this->assertEquals('The Publisher has already been taken.', $response['message']);
-
-        // Prüfe Datenbank
         $this->assertDatabaseHas(Publisher::class, [
             'name' => $publisher->name,
             'email' => $publisher->email,
@@ -117,53 +117,44 @@ class PublisherApiTest extends TestCase
 
         $response = $this->get('/api/publisher/1');
         $response->assertStatus(200)
-            ->assertJsonCount(1)
+            ->assertJsonCount(10)
             ->assertJsonStructure([
-                'data' => [
-                    'name',
-                    'email',
-                    'website',
-                    'address',
-                    'zipcode',
-                    'city',
-                    'country',
-                    'phone',
-                    'created_at',
-                    'updated_at',
-                ],
+                'name',
+                'email',
+                'website',
+                'address',
+                'zipcode',
+                'city',
+                'country',
+                'phone',
+                'created_at',
+                'updated_at',
             ]);
 
-        // Prüfe Datenbank
         $result = $response->decodeResponseJson();
         $this->assertDatabaseHas(Publisher::class, [
-            'name' => $result['data']['name'],
-            'email' => $result['data']['email'],
-            'website' => $result['data']['website'],
-            'address' => $result['data']['address'],
-            'zipcode' => $result['data']['zipcode'],
-            'city' => $result['data']['city'],
-            'country' => $result['data']['country'],
-            'phone' => $result['data']['phone'],
-            'created_at' => $result['data']['created_at'],
-            'updated_at' => $result['data']['updated_at'],
+            'name' => $result['name'],
+            'email' => $result['email'],
+            'website' => $result['website'],
+            'address' => $result['address'],
+            'zipcode' => $result['zipcode'],
+            'city' => $result['city'],
+            'country' => $result['country'],
+            'phone' => $result['phone'],
+            'created_at' => $result['created_at'],
+            'updated_at' => $result['updated_at'],
         ]);
     }
 
-    public function test_show_publisher_not_found(): void
+    public function test_show_publisher_handle_not_found_exception(): void
     {
-        $publisher = Publisher::factory()->create();
-
         $response = $this->get('/api/publisher/999');
         $response->assertNotFound()
             ->assertExactJson([
                 'error' => [
-                    'message' => "Publisher can not found"
+                    'message' => 'Publisher can not found'
                 ]
             ]);
-
-        $this->assertDatabaseHas(Publisher::class, [
-            'id' => $publisher->id,
-        ]);
 
         $this->assertDatabaseMissing(Publisher::class, [
             'id' => 999,
@@ -173,45 +164,75 @@ class PublisherApiTest extends TestCase
     public function test_update_publisher(): void
     {
         $publisher = Publisher::factory()->create();
-        $updatedPublisher = Publisher::factory()->make();
+        $data = [
+            'email' => $this->faker->companyEmail(),
+            'website' => $this->faker->url(),
+        ];
 
-        $response = $this->putJson('/api/publisher/' . $publisher->id, [
-            'name' => $updatedPublisher->name,
-            'email' => $updatedPublisher->email,
-            'website' => $updatedPublisher->website,
-            'phone' => $updatedPublisher->phone,
-        ]);
+        $response = $this->putJson('/api/publisher/' . $publisher->id, $data);
         $response->assertOk()
             ->assertJsonStructure([
-                'data' => [
-                    'name',
-                    'email',
-                    'website',
-                    'address',
-                    'zipcode',
-                    'city',
-                    'country',
-                    'phone',
-                    'created_at',
-                    'updated_at',
+                'name',
+                'email',
+                'website',
+                'address',
+                'zipcode',
+                'city',
+                'country',
+                'phone',
+                'created_at',
+                'updated_at',
+            ]);
+
+        $result = $response->decodeResponseJson();
+
+        $this->assertEquals($data['email'], $result['email']);
+        $this->assertEquals($data['website'], $result['website']);
+        $this->assertDatabaseHas(Publisher::class, [
+            'id' => $publisher->id,
+            'email' => $result['email'],
+            'website' => $result['website'],
+        ]);
+    }
+
+    public function test_update_publisher_handle_not_found_exception(): void
+    {
+        $response = $this->putJson('/api/publisher/999', [
+            'email' => $this->faker->companyEmail(),
+            'website' => $this->faker->url(),
+        ]);
+
+        $response->assertNotFound()
+            ->assertJsonStructure([
+                'error' => [
+                    'message',
                 ]
             ]);
 
-        // Konvertiere das Ergebnis in ein Array
+        /** @var array<string, string> $result */
         $result = $response->decodeResponseJson();
 
-        $this->assertEquals($updatedPublisher->name, $result['data']['name']);
-        $this->assertEquals($updatedPublisher->email, $result['data']['email']);
-        $this->assertEquals($updatedPublisher->website, $result['data']['website']);
-        $this->assertEquals($updatedPublisher->phone, $result['data']['phone']);
-
-        // Prüfe Datenbank
-        $this->assertDatabaseHas(Publisher::class, [
-            'name' => $result['data']['name'],
-            'email' => $result['data']['email'],
-            'website' => $result['data']['website'],
-            'phone' => $result['data']['phone'],
+        $this->assertEquals('Publisher can not found', $result['error']['message']);
+        $this->assertDatabaseMissing(Publisher::class, [
+            'id' => 999,
         ]);
+    }
+
+    public function test_update_publisher_validation_unique(): void
+    {
+        $publisher = Publisher::factory()->count(2)->create();
+
+        /** @var array<int, array<string, string>> $data */
+        $data = $publisher->toArray();
+
+        $response = $this->putJson('/api/publisher/2', [
+            'name' => $data[0]['name'],
+            'email' => $data[0]['email'],
+            'website' => $data[0]['website'],
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['name']);
     }
 
     public function test_delete_publisher(): void
@@ -228,19 +249,8 @@ class PublisherApiTest extends TestCase
 
     public function test_delete_publisher_failed(): void
     {
-        $publisher = Publisher::factory()->create();
-
         $response = $this->delete('/api/publisher/999');
-        $response->assertNotFound()
-            ->assertExactJson([
-            'error' => [
-                'message' => "Publisher can not deleted"
-            ]
-        ]);
-
-        $this->assertDatabaseHas(Publisher::class, [
-            'id' => $publisher->id,
-        ]);
+        $response->assertNoContent();
 
         $this->assertDatabaseMissing(Publisher::class, [
             'id' => 999,
