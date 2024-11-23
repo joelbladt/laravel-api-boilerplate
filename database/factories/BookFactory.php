@@ -23,7 +23,7 @@ class BookFactory extends Factory
             'isbn' => $this->faker->isbn13(),
             'publisher_id' => Publisher::factory(),
             'publication_year' => $this->faker->year(),
-            'genres' => $this->faker->word(),
+            'genres' => null,
             'summary' => $this->faker->paragraph(),
         ];
     }

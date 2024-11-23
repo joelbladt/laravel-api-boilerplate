@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static Builder|Publisher newQuery()
  * @method static Builder|Publisher query()
  * @method static Builder|Publisher whereId($value)
+ *
  * @mixin \Eloquent
  */
 class Publisher extends Model

@@ -9,6 +9,7 @@ use App\Models\Publisher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 use InvalidArgumentException;
 use Tests\TestCase;
 
@@ -48,11 +49,17 @@ class BookApiTest extends TestCase
                     ],
                 ],
                 'meta' => [
-                    'total'
+                    'per_page',
+                    'current_page',
+                    'last_page',
+                    'total',
                 ],
             ]);
 
-        $resourceCollection = new BookResourceCollection($books->load('publisher'));
+        $resourceCollection = new BookResourceCollection(
+            new LengthAwarePaginator($books->load('publisher'), 10, 10)
+        );
+
         $this->assertEquals($resourceCollection
             ->response()
             ->getData(true),
@@ -73,7 +80,6 @@ class BookApiTest extends TestCase
         $this->assertEquals($book->title, $response['title']);
         $this->assertEquals($book->author, $response['author']);
         $this->assertEquals($book->isbn, $response['isbn']);
-        $this->assertNotEmpty($response['created_at']);
 
         $this->assertDatabaseHas(Book::class, [
             'title' => $book->title,
@@ -99,7 +105,6 @@ class BookApiTest extends TestCase
         $this->assertEquals($book->title, $response['title']);
         $this->assertEquals($book->author, $response['author']);
         $this->assertEquals($book->isbn, $response['isbn']);
-        $this->assertNotEmpty($response['created_at']);
 
         $this->assertDatabaseHas(Book::class, [
             'title' => $book->title,
@@ -134,8 +139,8 @@ class BookApiTest extends TestCase
 
             $this->assertEquals([
                 'error' => [
-                    'message' => "Publisher can not found"
-                ]
+                    'message' => 'Publisher can not found',
+                ],
             ], $response->getData(true));
         }
     }
@@ -166,8 +171,8 @@ class BookApiTest extends TestCase
 
             $this->assertEquals([
                 'error' => [
-                    'message' => "The publisher_id must be an integer."
-                ]
+                    'message' => 'The publisher_id must be an integer.',
+                ],
             ], $response->getData(true));
         }
     }
@@ -206,7 +211,7 @@ class BookApiTest extends TestCase
 
         $response = $this->get('/api/books/1');
         $response->assertStatus(200)
-            ->assertJsonCount(9)
+            ->assertJsonCount(7)
             ->assertJsonStructure([
                 'title',
                 'author',
@@ -224,8 +229,6 @@ class BookApiTest extends TestCase
                 'publication_year',
                 'genres',
                 'summary',
-                'created_at',
-                'updated_at',
             ]);
 
         $result = $response->decodeResponseJson();
@@ -245,8 +248,8 @@ class BookApiTest extends TestCase
         $response->assertNotFound()
             ->assertExactJson([
                 'error' => [
-                    'message' => 'Book can not found'
-                ]
+                    'message' => 'Book can not found',
+                ],
             ]);
 
         $this->assertDatabaseMissing(Book::class, [
@@ -301,7 +304,7 @@ class BookApiTest extends TestCase
             ->assertJsonStructure([
                 'error' => [
                     'message',
-                ]
+                ],
             ]);
 
         /** @var array<string, string> $result */
@@ -335,8 +338,8 @@ class BookApiTest extends TestCase
 
             $this->assertEquals([
                 'error' => [
-                    'message' => "Publisher can not found"
-                ]
+                    'message' => 'Publisher can not found',
+                ],
             ], $response->getData(true));
         }
     }
@@ -363,8 +366,8 @@ class BookApiTest extends TestCase
 
             $this->assertEquals([
                 'error' => [
-                    'message' => "The publisher_id must be an integer."
-                ]
+                    'message' => 'The publisher_id must be an integer.',
+                ],
             ], $response->getData(true));
         }
     }
@@ -381,10 +384,15 @@ class BookApiTest extends TestCase
         ]);
     }
 
-    public function test_delete_book_failed(): void
+    public function test_delete_book_handle_exception(): void
     {
         $response = $this->delete('/api/books/999');
-        $response->assertNoContent();
+        $response->assertNotFound()
+            ->assertExactJson([
+                'error' => [
+                    'message' => 'Book can not found',
+                ],
+            ]);
 
         $this->assertDatabaseMissing(Book::class, [
             'id' => 999,

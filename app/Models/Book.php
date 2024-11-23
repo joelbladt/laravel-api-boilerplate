@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static Builder|Book newQuery()
  * @method static Builder|Book query()
  * @method static Builder|Book whereId($value)
+ *
  * @mixin \Eloquent
  */
 class Book extends Model

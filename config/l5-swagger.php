@@ -76,7 +76,7 @@ return [
             /*
              * Absolute path to location where parsed annotations will be stored
              */
-            'docs' => storage_path('api-docs'),
+            'docs' => storage_path('docs'),
 
             /*
              * Absolute path to directory where to export views

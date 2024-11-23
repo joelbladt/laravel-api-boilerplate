@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Http\Resources\PublisherResourceCollection;
+use App\Models\Book;
 use App\Models\Publisher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Tests\TestCase;
 
 class PublisherApiTest extends TestCase
@@ -35,11 +37,17 @@ class PublisherApiTest extends TestCase
                     ],
                 ],
                 'meta' => [
-                    'total'
+                    'per_page',
+                    'current_page',
+                    'last_page',
+                    'total',
                 ],
             ]);
 
-        $resourceCollection = new PublisherResourceCollection($publisher);
+        $resourceCollection = new PublisherResourceCollection(
+            new LengthAwarePaginator($publisher, 10, 10)
+        );
+
         $this->assertEquals($resourceCollection
             ->response()
             ->getData(true),
@@ -70,7 +78,6 @@ class PublisherApiTest extends TestCase
         $this->assertEquals($publisher->city, $response['city']);
         $this->assertEquals($publisher->country, $response['country']);
         $this->assertEquals($publisher->phone, $response['phone']);
-        $this->assertNotEmpty($response['created_at']);
 
         $this->assertDatabaseHas(Publisher::class, [
             'name' => $publisher->name,
@@ -81,7 +88,6 @@ class PublisherApiTest extends TestCase
             'city' => $publisher->city,
             'country' => $publisher->country,
             'phone' => $publisher->phone,
-            'created_at' => now(),
         ]);
     }
 
@@ -117,7 +123,7 @@ class PublisherApiTest extends TestCase
 
         $response = $this->get('/api/publisher/1');
         $response->assertStatus(200)
-            ->assertJsonCount(10)
+            ->assertJsonCount(8)
             ->assertJsonStructure([
                 'name',
                 'email',
@@ -127,8 +133,6 @@ class PublisherApiTest extends TestCase
                 'city',
                 'country',
                 'phone',
-                'created_at',
-                'updated_at',
             ]);
 
         $result = $response->decodeResponseJson();
@@ -141,8 +145,71 @@ class PublisherApiTest extends TestCase
             'city' => $result['city'],
             'country' => $result['country'],
             'phone' => $result['phone'],
-            'created_at' => $result['created_at'],
-            'updated_at' => $result['updated_at'],
+        ]);
+    }
+
+    public function test_show_books_from_publisher(): void
+    {
+        Book::factory()
+            ->count(10)
+            ->create([
+                'publisher_id' => Publisher::factory()->create()->id,
+            ]);
+
+        $response = $this->get('/api/publisher/1/books');
+        $response->assertStatus(200)
+            ->assertJsonCount(10, 'data')
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => [
+                        'title',
+                        'author',
+                        'isbn',
+                        'publication_year',
+                        'genres',
+                        'summary',
+                    ],
+                ],
+                'meta' => [
+                    'per_page',
+                    'current_page',
+                    'last_page',
+                    'total',
+                ],
+            ]);
+    }
+
+    public function test_show_null_books_from_publisher(): void
+    {
+        Publisher::factory()->create();
+
+        $response = $this->get('/api/publisher/1/books');
+        $response->assertStatus(200)
+            ->assertJsonCount(0, 'data')
+            ->assertJsonStructure([
+                'data' => [
+                ],
+                'meta' => [
+                    'per_page',
+                    'current_page',
+                    'last_page',
+                    'total',
+                ],
+            ]);
+    }
+
+    public function test_show_books_from_publisher_handle_not_found_exception(): void
+    {
+        $response = $this->get('/api/publisher/999/books');
+        $response->assertNotFound()
+            ->assertExactJson([
+                'error' => [
+                    'message' => 'Publisher can not found',
+                ],
+            ]);
+
+        $this->assertDatabaseMissing(Publisher::class, [
+            'id' => 999,
         ]);
     }
 
@@ -152,8 +219,8 @@ class PublisherApiTest extends TestCase
         $response->assertNotFound()
             ->assertExactJson([
                 'error' => [
-                    'message' => 'Publisher can not found'
-                ]
+                    'message' => 'Publisher can not found',
+                ],
             ]);
 
         $this->assertDatabaseMissing(Publisher::class, [
@@ -180,8 +247,6 @@ class PublisherApiTest extends TestCase
                 'city',
                 'country',
                 'phone',
-                'created_at',
-                'updated_at',
             ]);
 
         $result = $response->decodeResponseJson();
@@ -206,7 +271,7 @@ class PublisherApiTest extends TestCase
             ->assertJsonStructure([
                 'error' => [
                     'message',
-                ]
+                ],
             ]);
 
         /** @var array<string, string> $result */
@@ -247,10 +312,15 @@ class PublisherApiTest extends TestCase
         ]);
     }
 
-    public function test_delete_publisher_failed(): void
+    public function test_delete_publisher_handle_exception(): void
     {
         $response = $this->delete('/api/publisher/999');
-        $response->assertNoContent();
+        $response->assertNotFound()
+            ->assertExactJson([
+                'error' => [
+                    'message' => 'Publisher can not found',
+                ],
+            ]);
 
         $this->assertDatabaseMissing(Publisher::class, [
             'id' => 999,

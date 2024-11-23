@@ -25,7 +25,6 @@ class BookServiceTest extends TestCase
     }
 
     /**
-     * @return void
      * @throws PublisherNotFoundException
      */
     public function test_can_create_a_book(): void
@@ -84,15 +83,12 @@ class BookServiceTest extends TestCase
 
             $this->assertEquals([
                 'error' => [
-                    'message' => "Book can not found"
-                ]
+                    'message' => 'Book can not found',
+                ],
             ], $response->getData(true));
         }
     }
 
-    /**
-     * @return void
-     */
     public function test_can_not_update_a_book_handle_publisher_not_found_exception(): void
     {
         try {
@@ -107,14 +103,13 @@ class BookServiceTest extends TestCase
 
             $this->assertEquals([
                 'error' => [
-                    'message' => "Publisher can not found"
-                ]
+                    'message' => 'Publisher can not found',
+                ],
             ], $response->getData(true));
         }
     }
 
     /**
-     * @return void
      * @throws PublisherNotFoundException
      */
     public function test_can_not_update_a_book_handle_invalid_argument_exception(): void
@@ -140,7 +135,6 @@ class BookServiceTest extends TestCase
     }
 
     /**
-     * @return void
      * @throws BookNotFoundException
      * @throws PublisherNotFoundException
      */
@@ -166,7 +160,6 @@ class BookServiceTest extends TestCase
     }
 
     /**
-     * @return void
      * @throws PublisherNotFoundException
      */
     public function test_can_delete_a_book(): void

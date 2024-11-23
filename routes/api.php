@@ -9,6 +9,8 @@ Route::apiResources([
     'publisher' => PublisherController::class,
 ]);
 
+Route::get('/publisher/{id}/books', [PublisherController::class, 'showBooks']);
+
 Route::get('/health', fn() => response()->json([
     'status' => 'ok',
 ]));

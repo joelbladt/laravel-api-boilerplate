@@ -1,39 +1,40 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Interfaces;
 
+use App\Models\Book;
 use App\Models\Publisher;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface PublisherRepositoryInterface
 {
     /**
-     * @return Collection<int, Publisher>
+     * @return LengthAwarePaginator<Publisher>
      */
-    public function getAllPublisher(): Collection;
+    public function getAllPublisher(): LengthAwarePaginator;
 
-    /**
-     * @param int $id
-     * @return Publisher|null
-     */
     public function findPublisherById(int $id): ?Publisher;
 
     /**
+     * @return LengthAwarePaginator<Book>
+     */
+    public function findBooksByPublisherId(
+        int $id,
+        int $perPage = 10,
+        int $page = 1
+    ): LengthAwarePaginator;
+
+    /**
      * @param array<string, mixed> $data
-     * @return Publisher
      */
     public function createPublisher(array $data): Publisher;
 
     /**
-     * @param int $id
      * @param array<string, mixed> $data
-     * @return Publisher
      */
     public function updatePublisher(int $id, array $data): Publisher;
 
-    /**
-     * @param int $id
-     * @return bool|null
-     */
     public function deletePublisherById(int $id): ?bool;
 }

@@ -74,8 +74,8 @@ class PublisherServiceTest extends TestCase
 
             $this->assertEquals([
                 'error' => [
-                    'message' => "Publisher can not found"
-                ]
+                    'message' => 'Publisher can not found',
+                ],
             ], $response->getData(true));
         }
     }

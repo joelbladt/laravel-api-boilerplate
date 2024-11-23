@@ -1,0 +1,534 @@
+openapi: 3.0.0
+info:
+  title: 'Laravel API Boilerplate'
+  description: 'API-Documentation for this Boilerplate'
+  version: 1.1.0
+paths:
+  /api/books:
+    get:
+      tags:
+        - Books
+      summary: 'Get a collection of books'
+      description: 'Display a listing of the resource.'
+      operationId: a9d13283dfab262e97af3c914d51b7a8
+      parameters:
+        - $ref: '#/components/parameters/itemsPerPage'
+        - $ref: '#/components/parameters/currentPage'
+      responses:
+        200:
+          description: 'A collection of books'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookResourceCollection'
+    post:
+      tags:
+        - Books
+      summary: 'Store a newly created resource in storage.'
+      description: 'Created a new book'
+      operationId: 47047e95a700b3271b697e57d0965191
+      requestBody:
+        description: 'Store a new Book'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreBookRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookResource'
+  '/api/books/{id}':
+    get:
+      tags:
+        - Books
+      summary: 'Display the specified resource.'
+      description: 'Display the specified book'
+      operationId: 2fdd668eb661591758aff4c56ca9b66a
+      parameters:
+        - $ref: '#/components/parameters/identifier'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookResource'
+        404:
+          description: 'Book not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404BookNotFound'
+    put:
+      tags:
+        - Books
+      summary: 'Update the specified resource in storage.'
+      description: 'Update the specified book by replacing all properties'
+      operationId: f5ca658c501a803d68655af0365e3802
+      parameters:
+        - $ref: '#/components/parameters/identifier'
+      requestBody:
+        description: 'Update the specified book by replacing all properties'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookRequest'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookResource'
+        404:
+          description: 'Book not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404BookNotFound'
+    delete:
+      tags:
+        - Books
+      summary: 'Remove the specified resource from storage.'
+      description: 'Delete the specified book entirely'
+      operationId: 1a9c26667c32b8ed5e5770d7a1cc9d5c
+      parameters:
+        - $ref: '#/components/parameters/identifier'
+      responses:
+        204:
+          description: Success
+        404:
+          description: 'Book not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404BookNotFound'
+  /api/publisher:
+    get:
+      tags:
+        - Publisher
+      summary: 'Get a collection of publisher'
+      description: 'Display a listing of the resource.'
+      operationId: 959339a14e58d3786edd6bf8092717cf
+      responses:
+        200:
+          description: 'A collection of publisher'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublisherResourceCollection'
+    post:
+      tags:
+        - Publisher
+      summary: 'Store a newly created resource in storage.'
+      description: 'Created a new Publisher.'
+      operationId: 475423a9b06e30a35030f2aac4ff089c
+      requestBody:
+        description: 'Store a new publisher'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StorePublisherRequest'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublisherResource'
+  '/api/publisher/{id}':
+    get:
+      tags:
+        - Publisher
+      summary: 'Display the specified resource.'
+      description: 'Display the specified publisher'
+      operationId: ebf678ed7005ebdfe8ee40bffb25b2d6
+      parameters:
+        - $ref: '#/components/parameters/identifier'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublisherResource'
+        404:
+          description: 'Publisher not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404PublisherNotFound'
+    put:
+      tags:
+        - Publisher
+      summary: 'Update the specified resource in storage.'
+      description: 'Update the specified publisher by replacing all properties.'
+      operationId: cf9b8560272a200fcd7122b6e88267cd
+      parameters:
+        - $ref: '#/components/parameters/identifier'
+      responses:
+        200:
+          description: OK
+        404:
+          description: 'Publisher not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404PublisherNotFound'
+    delete:
+      tags:
+        - Publisher
+      summary: 'Remove the specified resource from storage.'
+      description: 'Delete the specified publisher entirely.'
+      operationId: 6922bdc0e33bf5bfc9fcb50066ce2188
+      parameters:
+        - $ref: '#/components/parameters/identifier'
+      responses:
+        204:
+          description: Success
+        404:
+          description: 'Publisher not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404PublisherNotFound'
+  '/api/publisher/{id}/books':
+    get:
+      tags:
+        - Publisher
+      summary: 'Get a collection of books from Publisher'
+      operationId: 9efe488f31df225c6da45c0f3c2415a0
+      parameters:
+        - $ref: '#/components/parameters/identifier'
+        - $ref: '#/components/parameters/itemsPerPage'
+        - $ref: '#/components/parameters/currentPage'
+      responses:
+        200:
+          description: 'A collection of books from selected Publisher'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookResourceCollection'
+        404:
+          description: 'Publisher not Found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/404PublisherNotFound'
+components:
+  schemas:
+    404BookNotFound:
+      title: '404 - Book not Found'
+      description: 'Scheme Error - Book not Found'
+      properties:
+        error:
+          properties:
+            message:
+              type: string
+              example: 'Book can not found'
+          type: object
+      type: object
+    404PublisherNotFound:
+      title: '404 - Publisher not Found'
+      description: 'Scheme Error - Publisher not Found'
+      properties:
+        error:
+          properties:
+            message:
+              type: string
+              example: 'Publisher can not found'
+          type: object
+      type: object
+    MetadataResource:
+      title: 'Metadata Schema Resource'
+      description: 'Scheme for the Metadata'
+      properties:
+        per_page:
+          description: 'The number of items displayed per page in the paginated response'
+          type: integer
+          example: '10'
+        current_page:
+          description: 'The current page number of the paginated data'
+          type: integer
+          example: '1'
+        last_page:
+          description: 'The total number of pages available'
+          type: integer
+          example: '1'
+        total:
+          description: 'The total number of items in the dataset'
+          type: integer
+          example: '3'
+      type: object
+    StoreBookRequest:
+      title: 'Store Book Request'
+      description: 'RequestBody to create a Book'
+      required:
+        - title
+        - author
+        - isbn
+      properties:
+        title:
+          description: 'Book title'
+          type: string
+        author:
+          description: 'Author of the Book'
+          type: string
+        isbn:
+          description: 'ISBN of the Book'
+          type: string
+        published_year:
+          description: 'Year of publication'
+          type: integer
+          example: 1900
+          nullable: true
+        published_id:
+          description: 'Id of the Publisher'
+          type: integer
+          example: 1
+          nullable: true
+        genres:
+          description: 'Categories of the Book'
+          type: string
+          nullable: true
+        summary:
+          description: 'Summary of the book'
+          type: string
+          nullable: true
+      type: object
+    StorePublisherRequest:
+      title: 'Store Publisher Request'
+      description: 'RequestBody to create a Publisher'
+      required:
+        - name
+        - email
+        - website
+      properties:
+        name:
+          description: 'Name of the publisher'
+          type: string
+          example: 'Bloomsbury Publishing Plc'
+        email:
+          description: 'Contact e-mail of the publisher'
+          type: string
+          example: contact@bloomsbury.com
+        website:
+          description: 'Website of the publisher'
+          type: string
+          example: 'https://www.bloomsbury.com'
+        address:
+          description: 'Address of the publisher (street and number)'
+          type: string
+          example: '50 Bedford Square'
+        zipcode:
+          description: 'Zip code of the publishing house'
+          type: string
+          example: 'WC1B 3DP'
+        city:
+          description: 'City of the publishing house'
+          type: string
+          example: London
+        country:
+          description: 'Country of the publishing house'
+          type: string
+          example: 'United Kingdom'
+        phone:
+          description: 'Phone number of the publisher'
+          type: string
+          example: '+44 (0)20 7631 5600'
+      type: object
+    UpdateBookRequest:
+      title: 'Update Book Request'
+      description: 'RequestBody to update a Book'
+      properties:
+        title:
+          description: 'Book title'
+          type: string
+        author:
+          description: 'Author of the Book'
+          type: string
+        isbn:
+          description: 'ISBN of the Book'
+          type: string
+        published_year:
+          description: 'Year of publication'
+          type: integer
+          example: 1900
+          nullable: true
+        published_id:
+          description: 'Id of the Publisher'
+          type: integer
+          example: 1
+          nullable: true
+        genres:
+          description: 'Categories of the Book'
+          type: string
+          nullable: true
+        summary:
+          description: 'Summary of the Book'
+          type: string
+          nullable: true
+      type: object
+    UpdatePublisherRequest:
+      title: 'Update Publisher Request'
+      description: 'RequestBody to update a Publisher'
+      properties:
+        name:
+          description: 'Name of the publisher'
+          type: string
+          example: 'Bloomsbury Publishing Plc'
+        email:
+          description: 'Contact e-mail of the publisher'
+          type: string
+          example: contact@bloomsbury.com
+        website:
+          description: 'Website of the publisher'
+          type: string
+          example: 'https://www.bloomsbury.com'
+        address:
+          description: 'Address of the publisher (street and number)'
+          type: string
+          example: '50 Bedford Square'
+        zipcode:
+          description: 'Zip code of the publishing house'
+          type: string
+          example: 'WC1B 3DP'
+        city:
+          description: 'City of the publishing house'
+          type: string
+          example: London
+        country:
+          description: 'Country of the publishing house'
+          type: string
+          example: 'United Kingdom'
+        phone:
+          description: 'Phone number of the publisher'
+          type: string
+          example: '+44 (0)20 7631 5600'
+      type: object
+    BookResource:
+      title: 'Book Resource'
+      description: 'Scheme for a Book'
+      properties:
+        title:
+          description: 'Book title'
+          type: string
+          example: 'Harry Potter and the Order of the Phoenix'
+        author:
+          description: 'Author of the Book'
+          type: string
+          example: 'Joanne K. Rowling'
+        isbn:
+          description: 'ISBN of the Book'
+          type: string
+          example: '9780747551003'
+        published_year:
+          description: 'Year of publication'
+          type: integer
+          example: 2003
+        publisher:
+          $ref: '#/components/schemas/PublisherResource'
+        genres:
+          description: 'Categories of the Book'
+          type: string
+          example: 'Fantasy, Adventure'
+        summary:
+          description: 'Summary of the book'
+          type: string
+          example: "Dumbledore lowered his hands and surveyed Harry through his half-moon glasses. 'It is time,' he said, 'for me to tell you what I should have told you five years ago, Harry. Please sit down. I am going to tell you everything.' Harry Potter is due to start his fifth year at Hogwarts School of Witchcraft and Wizadry. He is desperate to get back to school and find out why hiss friends Ron and Hermione have been so secretive all summer. However, what Harry is about to discover in his new year at Hogwarts will turn his whole world upside down... But before he even gets to school, Harry has an unexpected and frightening encounter with two Dementors, has to face a court hearing at the Ministry of Magic and has been escorted on a night-time broomstick ride to the secret headquarters of a mysterious group called 'The Order of the Phoenix'. And that is just the start. A gripping and electrifying novel, full of suspense, secrets, and - of course - magic."
+      type: object
+    BookResourceCollection:
+      title: 'Book Resource Collection'
+      description: 'A collection of books wrapped in a data key'
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/BookResource'
+          minItems: 3
+        meta:
+          $ref: '#/components/schemas/MetadataResource'
+      type: object
+    PublisherResource:
+      title: 'Publisher Resource'
+      description: 'Scheme for a Publisher'
+      properties:
+        name:
+          description: 'Name of the publisher'
+          type: string
+          example: 'Bloomsbury Publishing Plc'
+        email:
+          description: 'Contact e-mail of the publisher'
+          type: string
+          example: contact@bloomsbury.com
+        website:
+          description: 'Website of the publisher'
+          type: string
+          example: 'https://www.bloomsbury.com'
+        address:
+          description: 'Address of the publisher (street and number)'
+          type: string
+          example: '50 Bedford Square'
+        zipcode:
+          description: 'Zip code of the publishing house'
+          type: string
+          example: 'WC1B 3DP'
+        city:
+          description: 'City of the publishing house'
+          type: string
+          example: London
+        country:
+          description: 'Country of the publishing house'
+          type: string
+          example: 'United Kingdom'
+        phone:
+          description: 'Phone number of the publisher'
+          type: string
+          example: '+44 (0)20 7631 5600'
+      type: object
+    PublisherResourceCollection:
+      title: 'Publisher Resource Collection'
+      description: 'A collection of publisher wrapped in a data key'
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublisherResource'
+          minItems: 3
+        meta:
+          $ref: '#/components/schemas/MetadataResource'
+      type: object
+  parameters:
+    identifier:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    itemsPerPage:
+      name: per_page
+      in: query
+      description: 'Items per page for pagination'
+      required: false
+      schema:
+        type: integer
+        default: 10
+    currentPage:
+      name: page
+      in: query
+      description: 'Current page number for the pagination'
+      required: false
+      schema:
+        type: integer
+        default: 1
+tags:
+  - name: Books
+    description: Books
+  - name: Publisher
+    description: Publisher

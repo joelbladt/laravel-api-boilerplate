@@ -1,31 +1,32 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Services;
 
 use App\Exceptions\PublisherNotFoundException;
 use App\Interfaces\PublisherRepositoryInterface;
+use App\Models\Book;
 use App\Models\Publisher;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PublisherService
 {
     public function __construct(
-        protected PublisherRepositoryInterface $publisherRepository
+        protected PublisherRepositoryInterface $publisherRepository,
     )
     {
     }
 
     /**
-     * @return Collection<int, Publisher>
+     * @return LengthAwarePaginator<Publisher>
      */
-    public function getAllPublisher(): Collection
+    public function getAllPublisher(int $perPage = 10, int $page = 1): LengthAwarePaginator
     {
         return $this->publisherRepository->getAllPublisher();
     }
 
     /**
-     * @param int $id
-     * @return Publisher|null
      * @throws PublisherNotFoundException
      */
     public function findPublisherById(int $id): ?Publisher
@@ -33,15 +34,26 @@ class PublisherService
         $publisher = $this->publisherRepository->findPublisherById($id);
 
         if (!$publisher) {
-            throw new PublisherNotFoundException();
+            throw new PublisherNotFoundException;
         }
 
         return $publisher;
     }
 
     /**
+     * @return LengthAwarePaginator<Book>
+     */
+    public function findBooksByPublisherId(
+        int $publisherId,
+        int $perPage = 10,
+        int $page = 1,
+    ): LengthAwarePaginator
+    {
+        return $this->publisherRepository->findBooksByPublisherId($publisherId, $perPage, $page);
+    }
+
+    /**
      * @param array<string, mixed> $data
-     * @return Publisher
      */
     public function createPublisher(array $data): Publisher
     {
@@ -49,19 +61,13 @@ class PublisherService
     }
 
     /**
-     * @param int $id
      * @param array<string, mixed> $data
-     * @return Publisher
      */
     public function updatePublisher(int $id, array $data): Publisher
     {
         return $this->publisherRepository->updatePublisher($id, $data);
     }
 
-    /**
-     * @param int $id
-     * @return bool|null
-     */
     public function deletePublisher(int $id): ?bool
     {
         return $this->publisherRepository->deletePublisherById($id);

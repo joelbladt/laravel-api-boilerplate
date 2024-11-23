@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Services;
 
@@ -7,29 +9,27 @@ use App\Exceptions\PublisherNotFoundException;
 use App\Interfaces\BookRepositoryInterface;
 use App\Interfaces\PublisherRepositoryInterface;
 use App\Models\Book;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use InvalidArgumentException;
 
 class BookService
 {
     public function __construct(
-        protected BookRepositoryInterface      $bookRepository,
+        protected BookRepositoryInterface $bookRepository,
         protected PublisherRepositoryInterface $publisherRepository,
     )
     {
     }
 
     /**
-     * @return Collection<int, Book>
+     * @return LengthAwarePaginator<Book>
      */
-    public function getAllBooks(): Collection
+    public function getAllBooks(int $perPage = 10, int $page = 1): LengthAwarePaginator
     {
-        return $this->bookRepository->getAllBooks();
+        return $this->bookRepository->getAllBooks($perPage, $page);
     }
 
     /**
-     * @param int $id
-     * @return Book|null
      * @throws BookNotFoundException
      */
     public function findBookById(int $id): ?Book
@@ -37,7 +37,7 @@ class BookService
         $book = $this->bookRepository->findBookById($id);
 
         if (!$book) {
-            throw new BookNotFoundException();
+            throw new BookNotFoundException;
         }
 
         if (isset($book->publisher_id)) {
@@ -49,7 +49,7 @@ class BookService
 
     /**
      * @param array<string, mixed> $data
-     * @return Book
+     *
      * @throws PublisherNotFoundException
      */
     public function createBook(array $data): Book
@@ -61,16 +61,16 @@ class BookService
 
             $publisher = $this->publisherRepository->findPublisherById($data['publisher_id']);
             if (!$publisher) {
-                throw new PublisherNotFoundException();
+                throw new PublisherNotFoundException;
             }
         }
+
         return $this->bookRepository->createBook($data);
     }
 
     /**
-     * @param int $id
      * @param array<string, mixed> $data
-     * @return Book
+     *
      * @throws PublisherNotFoundException
      */
     public function updateBook(int $id, array $data): Book
@@ -82,17 +82,13 @@ class BookService
 
             $publisher = $this->publisherRepository->findPublisherById($data['publisher_id']);
             if (!$publisher) {
-                throw new PublisherNotFoundException();
+                throw new PublisherNotFoundException;
             }
         }
 
         return $this->bookRepository->updateBook($id, $data);
     }
 
-    /**
-     * @param int $id
-     * @return bool|null
-     */
     public function deleteBook(int $id): ?bool
     {
         return $this->bookRepository->deleteBookById($id);

@@ -1,36 +1,56 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Repositories;
 
-use App\Exceptions\PublisherNotDeletedException;
 use App\Exceptions\PublisherNotFoundException;
 use App\Interfaces\PublisherRepositoryInterface;
+use App\Models\Book;
 use App\Models\Publisher;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PublisherRepository implements PublisherRepositoryInterface
 {
     /**
-     * @return Collection<int, Publisher>
+     * @return LengthAwarePaginator<Publisher>
      */
-    public function getAllPublisher(): Collection
+    public function getAllPublisher(int $perPage = 10, int $page = 1): LengthAwarePaginator
     {
-        $publisher = Publisher::with('books')->get()->all();
-        return Collection::make($publisher);
+        return Publisher::paginate($perPage, ['*'], 'page', $page);
     }
 
-    /**
-     * @param int $id
-     * @return Publisher|null
-     */
     public function findPublisherById(int $id): ?Publisher
     {
         return Publisher::find($id) ?? null;
     }
 
     /**
+     * @return LengthAwarePaginator<Book>
+     *
+     * @throws PublisherNotFoundException
+     */
+    public function findBooksByPublisherId(
+        int $id,
+        int $perPage = 10,
+        int $page = 1
+    ): LengthAwarePaginator
+    {
+        $publisher = Publisher::with('books')->find($id);
+
+        if (!$publisher) {
+            throw new PublisherNotFoundException;
+        }
+
+        if ($publisher->relationLoaded('books') && $publisher->books()->exists()) {
+            return $publisher->books()->paginate($perPage, ['*'], 'page', $page);
+        }
+
+        return new LengthAwarePaginator([], 0, $perPage, $page);
+    }
+
+    /**
      * @param array<string, string> $data
-     * @return Publisher
      */
     public function createPublisher(array $data): Publisher
     {
@@ -38,16 +58,14 @@ class PublisherRepository implements PublisherRepositoryInterface
     }
 
     /**
-     * @param int $id
      * @param array<string, string> $data
-     * @return Publisher
      */
     public function updatePublisher(int $id, array $data): Publisher
     {
         $publisher = $this->findPublisherById($id);
 
         if (!$publisher) {
-            throw new PublisherNotFoundException();
+            throw new PublisherNotFoundException;
         }
 
         $publisher->update($data);
@@ -55,16 +73,12 @@ class PublisherRepository implements PublisherRepositoryInterface
         return $publisher;
     }
 
-    /**
-     * @param int $id
-     * @return bool|null
-     */
     public function deletePublisherById(int $id): ?bool
     {
         $publisher = $this->findPublisherById($id);
 
         if (!$publisher) {
-            return false;
+            throw new PublisherNotFoundException;
         }
 
         return $publisher->delete();
