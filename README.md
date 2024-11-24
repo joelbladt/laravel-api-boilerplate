@@ -2,6 +2,7 @@
 
 <p align="center">
 <a href="https://github.com/joelbladt/laravel-api-boilerplate/actions"><img src="https://github.com/joelbladt/laravel-api-boilerplate/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://github.com/joelbladt/laravel-api-boilerplate/blob/main"><img src="https://img.shields.io/coverallsCoverage/github/joelbladt/laravel-api-boilerplate" alt="Coveralls"></a>
 <a href="https://github.com/joelbladt/laravel-api-boilerplate/blob/main/LICENSE.md"><img src="https://img.shields.io/github/license/joelbladt/laravel-api-boilerplate" alt="License"></a>
 
 </p>
