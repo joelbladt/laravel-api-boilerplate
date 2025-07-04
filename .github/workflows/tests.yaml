@@ -27,9 +27,9 @@ jobs:
       fail-fast: true
       matrix:
         php: [ 8.3, 8.4 ]
-        phpunit: [ '12.2' ]
+        phpunit: [ '12.1', '12.2' ]
         phpstan: [ '2.1' ]
-        paratest: [ '7.10' ]
+        paratest: [ '7.8', '7.9', '7.10' ]
         larastan: [ 'v3.5' ]
 
     name: PHP ${{ matrix.php }} - PHPUnit ${{ matrix.phpunit }} - with Paratest ${{ matrix.paratest }} - PHPStan ${{ matrix.phpstan }} - Larastan ${{ matrix.larastan }}
