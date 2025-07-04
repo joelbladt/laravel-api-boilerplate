@@ -88,9 +88,10 @@ class StorePublisherRequest extends FormRequest
                 'min:3',
                 'max:255',
                 Rule::unique('publishers')
-                    ->where(function ($query) {
-                        return $query->where('email', $this->email)
-                            && $query->where('website', $this->website);
+                    ->where(function (\Illuminate\Database\Query\Builder $query) {
+                        $query
+                            ->where('email', $this->email)
+                            ->where('website', $this->website);
                     }),
             ],
             'email' => 'required|string|email|filled',

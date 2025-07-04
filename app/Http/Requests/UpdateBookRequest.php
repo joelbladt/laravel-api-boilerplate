@@ -82,8 +82,8 @@ class UpdateBookRequest extends FormRequest
                 'filled',
                 Rule::unique('books')
                     ->ignore($this->books)
-                    ->where(function ($query) {
-                        return $query->where('isbn', $this->isbn);
+                    ->where(function (\Illuminate\Database\Query\Builder $query) {
+                        $query->where('isbn', $this->isbn);
                     }),
             ],
             'publisher_id' => 'integer|nullable',
