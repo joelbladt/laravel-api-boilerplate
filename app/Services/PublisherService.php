@@ -19,7 +19,7 @@ class PublisherService
     }
 
     /**
-     * @return LengthAwarePaginator<Publisher>
+     * @return LengthAwarePaginator<int, Publisher>
      */
     public function getAllPublisher(int $perPage = 10, int $page = 1): LengthAwarePaginator
     {
@@ -41,7 +41,7 @@ class PublisherService
     }
 
     /**
-     * @return LengthAwarePaginator<Book>
+     * @return LengthAwarePaginator<int, Book>
      */
     public function findBooksByPublisherId(
         int $publisherId,
