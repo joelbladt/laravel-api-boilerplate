@@ -7,7 +7,7 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
- * @property LengthAwarePaginator<self> $resource
+ * @property LengthAwarePaginator<int, self> $resource
  */
 class BaseResourceCollection extends ResourceCollection
 {
