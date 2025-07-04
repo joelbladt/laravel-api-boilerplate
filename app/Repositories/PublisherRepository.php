@@ -13,7 +13,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class PublisherRepository implements PublisherRepositoryInterface
 {
     /**
-     * @return LengthAwarePaginator<Publisher>
+     * @return LengthAwarePaginator<int, Publisher>
      */
     public function getAllPublisher(int $perPage = 10, int $page = 1): LengthAwarePaginator
     {
@@ -26,7 +26,7 @@ class PublisherRepository implements PublisherRepositoryInterface
     }
 
     /**
-     * @return LengthAwarePaginator<Book>
+     * @return LengthAwarePaginator<int, Book>
      *
      * @throws PublisherNotFoundException
      */
