@@ -22,7 +22,7 @@ class BookService
     }
 
     /**
-     * @return LengthAwarePaginator<Book>
+     * @return LengthAwarePaginator<int, Book>
      */
     public function getAllBooks(int $perPage = 10, int $page = 1): LengthAwarePaginator
     {
