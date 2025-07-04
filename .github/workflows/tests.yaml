@@ -26,11 +26,11 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [8.2, 8.3]
-        phpunit: ['11.0', '11.4']
+        php: [8.3, 8.4]
+        phpunit: ['11.0', '11.4', '12.2']
         phpstan: ['2.1']
-        paratest: ['7.6', '7.8']
-        larastan: ['v3.1']
+        paratest: ['7.8', '7.10']
+        larastan: ['v3.5']
 
     name: PHP ${{ matrix.php }} - PHPUnit ${{ matrix.phpunit }} - with Paratest ${{ matrix.paratest }} - PHPStan ${{ matrix.phpstan }} - Larastan ${{ matrix.larastan }}
 
@@ -51,9 +51,9 @@ jobs:
           REDIS_LIBS: liblz4-dev, liblzf-dev, libzstd-dev
 
       - name: Set Framework version
-        run: composer config version "11.x-dev"
+        run: composer config version "12.x-dev"
 
-      - name: Set minimum PHP 8.2 versions
+      - name: Set minimum PHP 8.3 versions
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 5
@@ -96,7 +96,7 @@ jobs:
           command: composer update --prefer-stable --prefer-dist --no-interaction --no-progress
 
       - name: Execute tests
-        run: php artisan test --parallel --configuration="phpunit.xml" --coverage-clover=build/logs/clover.xml
+        run: php artisan test --parallel --configuration="phpunit.xml.dist" --coverage-clover=build/logs/clover.xml
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
