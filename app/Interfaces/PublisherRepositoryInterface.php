@@ -11,14 +11,14 @@ use Illuminate\Pagination\LengthAwarePaginator;
 interface PublisherRepositoryInterface
 {
     /**
-     * @return LengthAwarePaginator<Publisher>
+     * @return LengthAwarePaginator<int, Publisher>
      */
     public function getAllPublisher(): LengthAwarePaginator;
 
     public function findPublisherById(int $id): ?Publisher;
 
     /**
-     * @return LengthAwarePaginator<Book>
+     * @return LengthAwarePaginator<int, Book>
      */
     public function findBooksByPublisherId(
         int $id,
