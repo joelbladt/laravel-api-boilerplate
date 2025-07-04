@@ -8,6 +8,7 @@ use App\Repositories\BookRepository;
 use App\Repositories\PublisherRepository;
 use App\Services\BookService;
 use App\Services\PublisherService;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -18,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(BookRepositoryInterface::class, BookRepository::class);
-        $this->app->bind(BookService::class, function ($app) {
+        $this->app->bind(BookService::class, function (Application $app) {
             return new BookService(
                 $app->make(BookRepositoryInterface::class),
                 $app->make(PublisherRepositoryInterface::class),
@@ -26,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(PublisherRepositoryInterface::class, PublisherRepository::class);
-        $this->app->bind(PublisherService::class, function ($app) {
+        $this->app->bind(PublisherService::class, function (Application $app) {
             return new PublisherService($app->make(PublisherRepositoryInterface::class));
         });
     }
