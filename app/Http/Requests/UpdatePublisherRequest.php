@@ -88,9 +88,10 @@ class UpdatePublisherRequest extends FormRequest
                 'max:255',
                 Rule::unique('publishers')
                     ->ignore($this->publisher)
-                    ->where(function ($query) {
-                        return $query->where('email', $this->email)
-                            && $query->where('website', $this->website);
+                    ->where(function (\Illuminate\Database\Query\Builder $query) {
+                        $query
+                            ->where('email', $this->email)
+                            ->where('website', $this->website);
                     }),
             ],
             'email' => 'sometimes|required|string|email|filled',
