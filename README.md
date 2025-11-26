@@ -55,6 +55,10 @@ php artisan key:generate
 php artisan migrate --seed
 ```
 
+## Project repositories
+
+For an overview of all related repositories and subprojects, see [REPOSITORIES.md](REPOSITORIES.md).
+
 ## Installed Packages
 
 This project uses additional Laravel packages to enhance the API functionality. Here’s a list of the key packages and how to configure them.
