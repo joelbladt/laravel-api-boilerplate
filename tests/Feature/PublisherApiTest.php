@@ -5,14 +5,21 @@ namespace Tests\Feature;
 use App\Http\Resources\PublisherResourceCollection;
 use App\Models\Book;
 use App\Models\Publisher;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class PublisherApiTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
+
+    private function authenticate(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+    }
 
     public function test_get_publisher(): void
     {
@@ -57,6 +64,8 @@ class PublisherApiTest extends TestCase
 
     public function test_create_publisher(): void
     {
+        $this->authenticate();
+
         $publisher = Publisher::factory()->make();
         $response = $this->postJson('/api/publisher', [
             'name' => $publisher->name,
@@ -93,6 +102,8 @@ class PublisherApiTest extends TestCase
 
     public function test_create_publisher_already_exists(): void
     {
+        $this->authenticate();
+
         $attributes = [
             'name' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
@@ -230,6 +241,8 @@ class PublisherApiTest extends TestCase
 
     public function test_update_publisher(): void
     {
+        $this->authenticate();
+
         $publisher = Publisher::factory()->create();
         $data = [
             'email' => $this->faker->companyEmail(),
@@ -262,6 +275,8 @@ class PublisherApiTest extends TestCase
 
     public function test_update_publisher_handle_not_found_exception(): void
     {
+        $this->authenticate();
+
         $response = $this->putJson('/api/publisher/999', [
             'email' => $this->faker->companyEmail(),
             'website' => $this->faker->url(),
@@ -285,6 +300,8 @@ class PublisherApiTest extends TestCase
 
     public function test_update_publisher_validation_unique(): void
     {
+        $this->authenticate();
+
         $publisher = Publisher::factory()->count(2)->create();
 
         /** @var array<int, array<string, string>> $data */
@@ -302,9 +319,11 @@ class PublisherApiTest extends TestCase
 
     public function test_delete_publisher(): void
     {
+        $this->authenticate();
+
         $publisher = Publisher::factory()->create();
 
-        $response = $this->delete('/api/publisher/' . $publisher->id);
+        $response = $this->deleteJson('/api/publisher/' . $publisher->id);
         $response->assertNoContent();
 
         $this->assertDatabaseMissing(Publisher::class, [
@@ -314,7 +333,9 @@ class PublisherApiTest extends TestCase
 
     public function test_delete_publisher_handle_exception(): void
     {
-        $response = $this->delete('/api/publisher/999');
+        $this->authenticate();
+
+        $response = $this->deleteJson('/api/publisher/999');
         $response->assertNotFound()
             ->assertExactJson([
                 'error' => [
@@ -325,5 +346,42 @@ class PublisherApiTest extends TestCase
         $this->assertDatabaseMissing(Publisher::class, [
             'id' => 999,
         ]);
+    }
+
+    public function test_create_publisher_requires_authentication(): void
+    {
+        $publisher = Publisher::factory()->make();
+
+        $this->postJson('/api/publisher', [
+            'name' => $publisher->name,
+            'email' => $publisher->email,
+            'website' => $publisher->website,
+        ])->assertUnauthorized()
+            ->assertExactJson([
+                'message' => 'Unauthenticated.',
+            ]);
+    }
+
+    public function test_update_publisher_requires_authentication(): void
+    {
+        $publisher = Publisher::factory()->create();
+
+        $this->putJson('/api/publisher/' . $publisher->id, [
+            'website' => $this->faker->url(),
+        ])->assertUnauthorized()
+            ->assertExactJson([
+                'message' => 'Unauthenticated.',
+            ]);
+    }
+
+    public function test_delete_publisher_requires_authentication(): void
+    {
+        $publisher = Publisher::factory()->create();
+
+        $this->deleteJson('/api/publisher/' . $publisher->id)
+            ->assertUnauthorized()
+            ->assertExactJson([
+                'message' => 'Unauthenticated.',
+            ]);
     }
 }

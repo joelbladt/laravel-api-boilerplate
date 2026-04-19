@@ -6,16 +6,23 @@ use App\Exceptions\PublisherNotFoundException;
 use App\Http\Resources\BookResourceCollection;
 use App\Models\Book;
 use App\Models\Publisher;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use InvalidArgumentException;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class BookApiTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
+
+    private function authenticate(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+    }
 
     public function test_get_all_books(): void
     {
@@ -69,6 +76,8 @@ class BookApiTest extends TestCase
 
     public function test_create_book(): void
     {
+        $this->authenticate();
+
         $book = Book::factory()->make();
         $response = $this->postJson('/api/books', [
             'title' => $book->title,
@@ -91,6 +100,8 @@ class BookApiTest extends TestCase
 
     public function test_create_book_with_publisher(): void
     {
+        $this->authenticate();
+
         $publisher = Publisher::factory()->create();
         $book = Book::factory()->make();
 
@@ -115,6 +126,8 @@ class BookApiTest extends TestCase
 
     public function test_create_book_handle_publisher_not_found_exception(): void
     {
+        $this->authenticate();
+
         try {
             $book = Book::factory()->make();
 
@@ -147,6 +160,8 @@ class BookApiTest extends TestCase
 
     public function test_create_book_handle_invalid_argument_exception(): void
     {
+        $this->authenticate();
+
         try {
             $book = Book::factory()->make();
 
@@ -179,6 +194,8 @@ class BookApiTest extends TestCase
 
     public function test_create_book_already_exists(): void
     {
+        $this->authenticate();
+
         $attributes = [
             'title' => $this->faker->sentence(3),
             'author' => $this->faker->name(),
@@ -259,6 +276,8 @@ class BookApiTest extends TestCase
 
     public function test_update_book(): void
     {
+        $this->authenticate();
+
         $book = Book::factory()->create();
         $data = [
             'summary' => $this->faker->paragraph(),
@@ -295,6 +314,8 @@ class BookApiTest extends TestCase
      */
     public function test_update_book_handle_not_found_exception(): void
     {
+        $this->authenticate();
+
         $response = $this->putJson('/api/books/999', [
             'title' => $this->faker->sentence(3),
             'isbn' => $this->faker->isbn13(),
@@ -319,6 +340,8 @@ class BookApiTest extends TestCase
     public function test_update_book_handle_publisher_not_found_exception(): void
     {
         try {
+            $this->authenticate();
+
             $book = Book::factory()->create();
 
             $response = $this->putJson('/api/books/' . $book->id, [
@@ -346,6 +369,8 @@ class BookApiTest extends TestCase
 
     public function test_update_book_handle_invalid_argument_exception(): void
     {
+        $this->authenticate();
+
         try {
             $book = Book::factory()->create();
 
@@ -374,9 +399,11 @@ class BookApiTest extends TestCase
 
     public function test_delete_book(): void
     {
+        $this->authenticate();
+
         $book = Book::factory()->create();
 
-        $response = $this->delete('/api/books/' . $book->id);
+        $response = $this->deleteJson('/api/books/' . $book->id);
         $response->assertNoContent();
 
         $this->assertDatabaseMissing(Book::class, [
@@ -386,7 +413,9 @@ class BookApiTest extends TestCase
 
     public function test_delete_book_handle_exception(): void
     {
-        $response = $this->delete('/api/books/999');
+        $this->authenticate();
+
+        $response = $this->deleteJson('/api/books/999');
         $response->assertNotFound()
             ->assertExactJson([
                 'error' => [
@@ -397,5 +426,42 @@ class BookApiTest extends TestCase
         $this->assertDatabaseMissing(Book::class, [
             'id' => 999,
         ]);
+    }
+
+    public function test_create_book_requires_authentication(): void
+    {
+        $book = Book::factory()->make();
+
+        $this->postJson('/api/books', [
+            'title' => $book->title,
+            'author' => $book->author,
+            'isbn' => $book->isbn,
+        ])->assertUnauthorized()
+            ->assertExactJson([
+                'message' => 'Unauthenticated.',
+            ]);
+    }
+
+    public function test_update_book_requires_authentication(): void
+    {
+        $book = Book::factory()->create();
+
+        $this->putJson('/api/books/' . $book->id, [
+            'summary' => $this->faker->paragraph(),
+        ])->assertUnauthorized()
+            ->assertExactJson([
+                'message' => 'Unauthenticated.',
+            ]);
+    }
+
+    public function test_delete_book_requires_authentication(): void
+    {
+        $book = Book::factory()->create();
+
+        $this->deleteJson('/api/books/' . $book->id)
+            ->assertUnauthorized()
+            ->assertExactJson([
+                'message' => 'Unauthenticated.',
+            ]);
     }
 }
