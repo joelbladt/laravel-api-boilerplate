@@ -57,9 +57,9 @@ class AuthController extends Controller
         try {
             $result = $this->authService->login(
                 new LoginDTO(
-                    email: $validated['email'],
-                    password: $validated['password'],
-                    remember: (bool) ($validated['remember'] ?? false),
+                    email: $request->string('email')->toString(),
+                    password: $request->string('password')->toString(),
+                    remember: $request->boolean('remember'),
                 )
             );
         } catch (InvalidArgumentException $e) {
