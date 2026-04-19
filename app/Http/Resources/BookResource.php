@@ -32,7 +32,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *          example="9780747551003"
  *     ),
  *     @OA\Property(
- *          property="published_year",
+ *          property="publication_year",
  *          type="integer",
  *          description="Year of publication",
  *          example=2003
@@ -44,9 +44,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     ),
  *     @OA\Property(
  *          property="genres",
- *          type="string",
+ *          type="array",
  *          description="Categories of the Book",
- *          example="Fantasy, Adventure"
+ *          @OA\Items(type="string", example="Fantasy"),
+ *          example={"Fantasy", "Adventure"}
  *     ),
  *     @OA\Property(
  *          property="summary",

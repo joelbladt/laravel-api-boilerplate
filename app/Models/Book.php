@@ -60,6 +60,7 @@ class Book extends Model
     public function casts(): array
     {
         return [
+            'genres' => 'array',
             'publication_year' => 'integer',
         ];
     }
