@@ -10,32 +10,22 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  linux_tests:
+  matrix-tests:
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_DATABASE: forge
-        ports:
-          - 33306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     strategy:
       fail-fast: true
       matrix:
-        php: [ 8.3, 8.4 ]
+        php: [ '8.3', '8.4' ]
         phpunit: [ '12.1', '12.2' ]
-        phpstan: [ '2.1' ]
         paratest: [ '7.8', '7.9', '7.10' ]
+        phpstan: [ '2.1' ]
         larastan: [ 'v3.5' ]
 
-    name: PHP ${{ matrix.php }} - PHPUnit ${{ matrix.phpunit }} - with Paratest ${{ matrix.paratest }} - PHPStan ${{ matrix.phpstan }} - Larastan ${{ matrix.larastan }}
+    name: PHP ${{ matrix.php }} - PHPUnit ${{ matrix.phpunit }} - ParaTest ${{ matrix.paratest }} - PHPStan ${{ matrix.phpstan }} - Larastan ${{ matrix.larastan }}
 
     steps:
       - name: Checkout code
@@ -49,14 +39,12 @@ jobs:
           ini-values: error_reporting=E_ALL
           tools: composer:v2
           coverage: xdebug
+          cache: composer
         env:
           REDIS_CONFIGURE_OPTS: --enable-redis --enable-redis-igbinary --enable-redis-msgpack --enable-redis-lzf --with-liblzf --enable-redis-zstd --with-libzstd --enable-redis-lz4 --with-liblz4
           REDIS_LIBS: liblz4-dev, liblzf-dev, libzstd-dev
 
-      - name: Set Framework version
-        run: composer config version "12.x-dev"
-
-      - name: Set minimum PHP 8.3 versions
+      - name: Set minimum framework dependencies
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 5
@@ -70,7 +58,7 @@ jobs:
           max_attempts: 5
           command: composer require phpunit/phpunit:^${{ matrix.phpunit }} --dev --no-interaction --no-update
 
-      - name: Set Paratest
+      - name: Set ParaTest
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 5
@@ -96,16 +84,47 @@ jobs:
         with:
           timeout_minutes: 5
           max_attempts: 5
-          command: composer update --prefer-stable --prefer-dist --no-interaction --no-progress
+          command: composer install --prefer-dist --no-interaction --no-progress --no-scripts
 
       - name: Execute tests
-        run: php artisan test --parallel --configuration="phpunit.xml.dist" --coverage-clover=build/logs/clover.xml
+        run: php artisan test --parallel --configuration="phpunit.xml.dist"
         env:
           DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
+          DB_DATABASE: ':memory:'
 
       - name: Execute PHPStan
         run: vendor/bin/phpstan --configuration="phpstan.neon.dist"
+
+  coverage:
+    runs-on: ubuntu-latest
+    name: Coverage upload (PHP 8.4)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, xml, xdebug
+          ini-values: error_reporting=E_ALL
+          tools: composer:v2
+          coverage: xdebug
+          cache: composer
+
+      - name: Install dependencies
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Execute tests with coverage
+        run: php artisan test --parallel --configuration="phpunit.xml.dist" --coverage-clover=build/logs/clover.xml
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ':memory:'
 
       - name: Upload coverage results to Coveralls
         env:

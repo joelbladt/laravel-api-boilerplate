@@ -7,20 +7,22 @@
     "require": {
         "php": "^8.3",
         "darkaonline/l5-swagger": "^9.0",
-        "laravel/framework": "^12.19",
-        "laravel/tinker": "^2.10"
+        "laravel/framework": "^12.56",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^2.11"
     },
     "require-dev": {
-        "brianium/paratest": "^7.10",
+        "barryvdh/laravel-ide-helper": "^3.7",
+        "brianium/paratest": "^7.20",
         "fakerphp/faker": "^1.24",
-        "larastan/larastan": "^v3.5",
+        "larastan/larastan": "^v3.9",
         "laravel/pail": "^1.2",
-        "laravel/pint": "^1.23",
-        "laravel/sail": "^1.43",
+        "laravel/pint": "^1.29",
+        "laravel/sail": "^1.57",
         "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^v8.8",
+        "nunomaduro/collision": "^v8.9",
         "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^12.2.6",
+        "phpunit/phpunit": "^12.5",
         "roave/security-advisories": "dev-latest"
     },
     "autoload": {
@@ -54,6 +56,16 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite"
+        ],
+        "ide-helper": [
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta",
+            "@php artisan ide-helper:models -W"
+        ],
+        "ide-helper-reset": [
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta",
+            "@php artisan ide-helper:models -RW"
         ]
     },
     "extra": {

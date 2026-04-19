@@ -29,7 +29,7 @@ use Illuminate\Validation\Rule;
  *         description="ISBN of the Book",
  *     ),
  *     @OA\Property(
- *         property="published_year",
+ *         property="publication_year",
  *         type="integer",
  *         description="Year of publication",
  *         example=1900,
@@ -44,8 +44,9 @@ use Illuminate\Validation\Rule;
  *     ),
  *     @OA\Property(
  *         property="genres",
- *         type="string",
+ *         type="array",
  *         description="Categories of the Book",
+ *         @OA\Items(type="string", example="Fantasy"),
  *         nullable=true
  *     ),
  *     @OA\Property(
@@ -87,7 +88,8 @@ class StoreBookRequest extends FormRequest
             ],
             'publisher_id' => 'integer|nullable',
             'publication_year' => 'integer|nullable',
-            'genres' => 'string|nullable',
+            'genres' => 'array|nullable',
+            'genres.*' => 'string|max:255',
             'summary' => 'string|nullable',
         ];
     }

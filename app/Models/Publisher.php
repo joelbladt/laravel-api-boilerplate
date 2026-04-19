@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * App\Models\Publisher
  *
+ * @property int $id
  * @property string $name
  * @property string $email
  * @property string $website
@@ -19,14 +20,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $city
  * @property string|null $country
  * @property string|null $phone
- * @property string|null $fax
- *
- * @method static PublisherFactory factory($count = null, $state = [])
- * @method static Builder|Publisher newModelQuery()
- * @method static Builder|Publisher newQuery()
- * @method static Builder|Publisher query()
- * @method static Builder|Publisher whereId($value)
- *
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Book> $books
+ * @property-read int|null $books_count
+ * @method static \Database\Factories\PublisherFactory factory($count = null, $state = [])
+ * @method static Builder<static>|Publisher newModelQuery()
+ * @method static Builder<static>|Publisher newQuery()
+ * @method static Builder<static>|Publisher query()
+ * @method static Builder<static>|Publisher whereAddress($value)
+ * @method static Builder<static>|Publisher whereCity($value)
+ * @method static Builder<static>|Publisher whereCountry($value)
+ * @method static Builder<static>|Publisher whereCreatedAt($value)
+ * @method static Builder<static>|Publisher whereEmail($value)
+ * @method static Builder<static>|Publisher whereId($value)
+ * @method static Builder<static>|Publisher whereName($value)
+ * @method static Builder<static>|Publisher wherePhone($value)
+ * @method static Builder<static>|Publisher whereUpdatedAt($value)
+ * @method static Builder<static>|Publisher whereWebsite($value)
+ * @method static Builder<static>|Publisher whereZipcode($value)
  * @mixin \Eloquent
  */
 class Publisher extends Model

@@ -3,7 +3,94 @@ info:
   title: 'Laravel API Boilerplate'
   description: 'API-Documentation for this Boilerplate'
   version: 1.1.0
+servers:
+  -
+    url: ''
 paths:
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: 'Login and receive Sanctum access token'
+      operationId: 8dcb70df1020986038d098cc08d05dae
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: secret
+                remember:
+                  type: boolean
+                  example: false
+              type: object
+      responses:
+        200:
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                properties:
+                  token_type:
+                    type: string
+                    example: Bearer
+                  access_token:
+                    type: string
+                  expires_in:
+                    type: integer
+                    example: null
+                    nullable: true
+                type: object
+        401:
+          description: 'Invalid credentials'
+      security: []
+  /api/auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: 'Logout and invalidate current Sanctum token'
+      operationId: 69281b12abb272c76871f19cb17ca563
+      responses:
+        204:
+          description: 'Logged out'
+        401:
+          description: 'Unauthenticated or invalid token'
+  /api/auth/me:
+    get:
+      tags:
+        - Auth
+      summary: 'Get authenticated user from current Sanctum token'
+      operationId: b9abb1a7a74670a19c215c2c133f14d8
+      responses:
+        200:
+          description: 'Authenticated user'
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: 'John Doe'
+                  email:
+                    type: string
+                    format: email
+                    example: user@example.com
+                type: object
+        401:
+          description: 'Unauthenticated or invalid token'
   /api/books:
     get:
       tags:
@@ -12,8 +99,10 @@ paths:
       description: 'Display a listing of the resource.'
       operationId: a9d13283dfab262e97af3c914d51b7a8
       parameters:
-        - $ref: '#/components/parameters/itemsPerPage'
-        - $ref: '#/components/parameters/currentPage'
+        -
+          $ref: '#/components/parameters/itemsPerPage'
+        -
+          $ref: '#/components/parameters/currentPage'
       responses:
         200:
           description: 'A collection of books'
@@ -49,7 +138,8 @@ paths:
       description: 'Display the specified book'
       operationId: 2fdd668eb661591758aff4c56ca9b66a
       parameters:
-        - $ref: '#/components/parameters/identifier'
+        -
+          $ref: '#/components/parameters/identifier'
       responses:
         200:
           description: OK
@@ -70,7 +160,8 @@ paths:
       description: 'Update the specified book by replacing all properties'
       operationId: f5ca658c501a803d68655af0365e3802
       parameters:
-        - $ref: '#/components/parameters/identifier'
+        -
+          $ref: '#/components/parameters/identifier'
       requestBody:
         description: 'Update the specified book by replacing all properties'
         required: true
@@ -98,7 +189,8 @@ paths:
       description: 'Delete the specified book entirely'
       operationId: 1a9c26667c32b8ed5e5770d7a1cc9d5c
       parameters:
-        - $ref: '#/components/parameters/identifier'
+        -
+          $ref: '#/components/parameters/identifier'
       responses:
         204:
           description: Success
@@ -150,7 +242,8 @@ paths:
       description: 'Display the specified publisher'
       operationId: ebf678ed7005ebdfe8ee40bffb25b2d6
       parameters:
-        - $ref: '#/components/parameters/identifier'
+        -
+          $ref: '#/components/parameters/identifier'
       responses:
         200:
           description: OK
@@ -171,7 +264,8 @@ paths:
       description: 'Update the specified publisher by replacing all properties.'
       operationId: cf9b8560272a200fcd7122b6e88267cd
       parameters:
-        - $ref: '#/components/parameters/identifier'
+        -
+          $ref: '#/components/parameters/identifier'
       responses:
         200:
           description: OK
@@ -188,7 +282,8 @@ paths:
       description: 'Delete the specified publisher entirely.'
       operationId: 6922bdc0e33bf5bfc9fcb50066ce2188
       parameters:
-        - $ref: '#/components/parameters/identifier'
+        -
+          $ref: '#/components/parameters/identifier'
       responses:
         204:
           description: Success
@@ -205,9 +300,12 @@ paths:
       summary: 'Get a collection of books from Publisher'
       operationId: 9efe488f31df225c6da45c0f3c2415a0
       parameters:
-        - $ref: '#/components/parameters/identifier'
-        - $ref: '#/components/parameters/itemsPerPage'
-        - $ref: '#/components/parameters/currentPage'
+        -
+          $ref: '#/components/parameters/identifier'
+        -
+          $ref: '#/components/parameters/itemsPerPage'
+        -
+          $ref: '#/components/parameters/currentPage'
       responses:
         200:
           description: 'A collection of books from selected Publisher'
@@ -283,7 +381,7 @@ components:
         isbn:
           description: 'ISBN of the Book'
           type: string
-        published_year:
+        publication_year:
           description: 'Year of publication'
           type: integer
           example: 1900
@@ -295,7 +393,10 @@ components:
           nullable: true
         genres:
           description: 'Categories of the Book'
-          type: string
+          type: array
+          items:
+            type: string
+            example: Fantasy
           nullable: true
         summary:
           description: 'Summary of the book'
@@ -356,7 +457,7 @@ components:
         isbn:
           description: 'ISBN of the Book'
           type: string
-        published_year:
+        publication_year:
           description: 'Year of publication'
           type: integer
           example: 1900
@@ -368,7 +469,10 @@ components:
           nullable: true
         genres:
           description: 'Categories of the Book'
-          type: string
+          type: array
+          items:
+            type: string
+            example: Fantasy
           nullable: true
         summary:
           description: 'Summary of the Book'
@@ -428,7 +532,7 @@ components:
           description: 'ISBN of the Book'
           type: string
           example: '9780747551003'
-        published_year:
+        publication_year:
           description: 'Year of publication'
           type: integer
           example: 2003
@@ -436,8 +540,13 @@ components:
           $ref: '#/components/schemas/PublisherResource'
         genres:
           description: 'Categories of the Book'
-          type: string
-          example: 'Fantasy, Adventure'
+          type: array
+          items:
+            type: string
+            example: Fantasy
+          example:
+            - Fantasy
+            - Adventure
         summary:
           description: 'Summary of the book'
           type: string
@@ -527,8 +636,22 @@ components:
       schema:
         type: integer
         default: 1
+  securitySchemes:
+    sanctum:
+      type: apiKey
+      description: 'Enter token in format (Bearer <token>)'
+      name: Authorization
+      in: header
 tags:
-  - name: Books
+  -
+    name: Auth
+    description: Auth
+  -
+    name: Books
     description: Books
-  - name: Publisher
+  -
+    name: Publisher
     description: Publisher
+security:
+  -
+    sanctum: []
