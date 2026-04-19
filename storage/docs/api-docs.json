@@ -5,7 +5,137 @@
         "description": "API-Documentation for this Boilerplate",
         "version": "1.1.0"
     },
+    "servers": [
+        {
+            "url": ""
+        }
+    ],
     "paths": {
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login and receive Sanctum access token",
+                "operationId": "8dcb70df1020986038d098cc08d05dae",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "secret"
+                                    },
+                                    "remember": {
+                                        "type": "boolean",
+                                        "example": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "expires_in": {
+                                            "type": "integer",
+                                            "example": null,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout and invalidate current Sanctum token",
+                "operationId": "69281b12abb272c76871f19cb17ca563",
+                "responses": {
+                    "204": {
+                        "description": "Logged out"
+                    },
+                    "401": {
+                        "description": "Unauthenticated or invalid token"
+                    }
+                }
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get authenticated user from current Sanctum token",
+                "operationId": "b9abb1a7a74670a19c215c2c133f14d8",
+                "responses": {
+                    "200": {
+                        "description": "Authenticated user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "John Doe"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "example": "user@example.com"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated or invalid token"
+                    }
+                }
+            }
+        },
         "/api/books": {
             "get": {
                 "tags": [
@@ -449,7 +579,7 @@
                         "description": "ISBN of the Book",
                         "type": "string"
                     },
-                    "published_year": {
+                    "publication_year": {
                         "description": "Year of publication",
                         "type": "integer",
                         "example": 1900,
@@ -463,7 +593,11 @@
                     },
                     "genres": {
                         "description": "Categories of the Book",
-                        "type": "string",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "Fantasy"
+                        },
                         "nullable": true
                     },
                     "summary": {
@@ -542,7 +676,7 @@
                         "description": "ISBN of the Book",
                         "type": "string"
                     },
-                    "published_year": {
+                    "publication_year": {
                         "description": "Year of publication",
                         "type": "integer",
                         "example": 1900,
@@ -556,7 +690,11 @@
                     },
                     "genres": {
                         "description": "Categories of the Book",
-                        "type": "string",
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "Fantasy"
+                        },
                         "nullable": true
                     },
                     "summary": {
@@ -633,7 +771,7 @@
                         "type": "string",
                         "example": "9780747551003"
                     },
-                    "published_year": {
+                    "publication_year": {
                         "description": "Year of publication",
                         "type": "integer",
                         "example": 2003
@@ -643,8 +781,15 @@
                     },
                     "genres": {
                         "description": "Categories of the Book",
-                        "type": "string",
-                        "example": "Fantasy, Adventure"
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "example": "Fantasy"
+                        },
+                        "example": [
+                            "Fantasy",
+                            "Adventure"
+                        ]
                     },
                     "summary": {
                         "description": "Summary of the book",
@@ -776,6 +921,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
         {
             "name": "Books",
             "description": "Books"
