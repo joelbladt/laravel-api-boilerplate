@@ -36,7 +36,7 @@ class PublisherResourceCollection extends BaseResourceCollection
     public function toArray(Request $request): array
     {
         return [
-            'data' => $this->collection->map(
+            'data' => ($this->collection ?? collect())->map(
                 function ($item) use ($request) {
                     return $item instanceof PublisherResource ? $item->toArray($request) : [];
                 }
