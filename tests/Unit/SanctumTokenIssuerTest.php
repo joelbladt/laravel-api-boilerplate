@@ -2,17 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Auth;
+namespace Tests\Unit;
 
 use App\DTO\Auth\AccessTokenDTO;
 use App\DTO\Auth\LoginDTO;
 use App\DTO\Auth\LogoutDTO;
 use App\DTO\Auth\RefreshTokenDTO;
+use App\Models\Publisher;
 use App\Models\User;
 use App\Services\Auth\SanctumTokenIssuer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Laravel\Sanctum\PersonalAccessToken;
 use LogicException;
 use Tests\TestCase;
 
@@ -121,5 +124,30 @@ final class SanctumTokenIssuerTest extends TestCase
         $this->expectExceptionMessage('Invalid access token.');
 
         $issuer->logout(new LogoutDTO('invalid-token'));
+    }
+
+    public function test_me_throws_exception_when_token_is_not_associated_with_user(): void
+    {
+        $publisher = Publisher::factory()->create();
+
+        $plainTextToken = Str::random(40);
+
+        $token = new PersonalAccessToken([
+            'name' => 'auth-token',
+            'token' => hash('sha256', $plainTextToken),
+            'abilities' => ['*'],
+        ]);
+
+        $token->tokenable()->associate($publisher);
+        $token->save();
+
+        $issuer = new SanctumTokenIssuer();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Token is not associated with a user.');
+
+        $issuer->me(new AccessTokenDTO(
+            accessToken: "{$token->id}|{$plainTextToken}",
+        ));
     }
 }
